@@ -1,34 +1,68 @@
-import React from 'react'
-import { Snackbar } from 'react-native-paper'
-import { StyleSheet, View, Text } from 'react-native'
-import { getStatusBarHeight } from 'react-native-status-bar-height'
-import { theme } from '../core/theme'
+import React, { useState, useEffect } from 'react';
+import { Text, View, StyleSheet, Animated } from 'react-native';
 
-export default function Toast({ type = 'error', message, onDismiss }) {
+const Toast = ({ type, message }) => {
+  const [fadeAnim] = useState(new Animated.Value(0)); // Initial value for opacity: 0
+
+  useEffect(() => {
+    Animated.timing(
+      fadeAnim,
+      {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true
+      }
+    ).start();
+
+    setTimeout(() => {
+      Animated.timing(
+        fadeAnim,
+        {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true
+        }
+      ).start();
+    }, 3000); // Hide the toast after 3 seconds
+  }, []);
+
   return (
-    <View style={styles.container}>
-      <Snackbar
-        visible={!!message}
-        duration={3000}
-        onDismiss={onDismiss}
-        style={{
-          backgroundColor:
-            type === 'error' ? theme.colors.error : theme.colors.success,
-        }}
-      >
-        <Text style={styles.content}>{message}</Text>
-      </Snackbar>
-    </View>
-  )
-}
+    <Animated.View
+      style={[
+        styles.toastContainer,
+        { opacity: fadeAnim }
+      ]}
+    >
+      <View style={[styles.toastContent, type === 'success' ? styles.success : styles.error]}>
+        <Text style={styles.message}>{message}</Text>
+      </View>
+    </Animated.View>
+  );
+};
 
 const styles = StyleSheet.create({
-  container: {
+  toastContainer: {
     position: 'absolute',
-    top: 80 + getStatusBarHeight(),
-    width: '100%',
+    bottom: 20,
+    left: 20,
+    right: 20,
+    alignItems: 'center',
+    zIndex: 999
   },
-  content: {
-    fontWeight: '500',
+  toastContent: {
+    padding: 10,
+    borderRadius: 5
   },
-})
+  success: {
+    backgroundColor: '#4CAF50', // Green
+  },
+  error: {
+    backgroundColor: '#f44336', // Red
+  },
+  message: {
+    color: '#fff',
+    fontSize: 16
+  }
+});
+
+export default Toast;

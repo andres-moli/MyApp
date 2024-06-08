@@ -8,7 +8,10 @@ const InfoScreen = ({navigation}) => {
   const handleLogout = async () => {
     await AsyncStorage.removeItem('userToken');
     await AsyncStorage.removeItem('userData');
-    navigation.navigate('Login');
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Login' }],
+    });
   };
   return (
     <View style={styles.container}>

@@ -1,0 +1,1 @@
+export const URL_API_GRAPHQL = 'https://cjjfg4vl-3002.use.devtunnels.ms/graphql'

@@ -1,73 +1,97 @@
-import React,  { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Text } from 'react-native';
-import CustomText from '../components/CustomText';
-import CustomButton from '../components/CustomButton';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Card } from "@paraboly/react-native-card";
-import { HalfModal } from 'react-native-half-modal';
-import * as Location from 'expo-location';
+import React,  { useState,useEffect } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Text, RefreshControl } from 'react-native';
+import { QueryVisitDashboardData } from '../api/visit';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import dayjs from 'dayjs';
+import es from "dayjs/locale/es";
+import CreateVisitModal from '../components/ModalCreateVisit';
+import UpdateVisitModal from '../components/ModalUpdateVisit';
+import { Card } from '../components/Cards';
+import { NoVisitsAnimation } from '../function/notVisit';
+import { Greeting } from '../components/Greeting';
+import { LoadingApp } from '../function/loading';
 
+dayjs.locale("es");
 
-const CardHome = () =>{}
-const HomeScreen = ({ navigation }) => {
-  const [location, setLocation] = useState(null);
-  const [errorMsg, setErrorMsg] = useState(null);
+const HomeScreen = ({ navigation, }) => {
+  const [dataUser, setdataUser] = useState(null);
   const [isModalVisible, setModalVisible] = useState(false);
+  const [visitDashboardData, setVisitDashboardData] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [isModalVisibleUpdate, setIsModalVisibleUpdate] = useState(false);
+  const [selectedVisitId, setSelectedVisitId] = useState(null);
+
+  const openModal = (visitId) => {
+    setSelectedVisitId(visitId);
+    setIsModalVisibleUpdate(true);
+  };
+
+  const closeModal = () => {
+    setSelectedVisitId(null);
+    setIsModalVisibleUpdate(false);
+    onRefresh()
+  };
+
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
-  const createVisit = () => {
-    // Aquí puedes implementar la lógica para crear una visita
-    // Por ahora, solo cerraremos el modal
-    toggleModal();
-  };
-  const getLocation = async () => {
-    try {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied');
-        return;
-      }
-
-      let currentLocation = await Location.getCurrentPositionAsync({});
-      setLocation(currentLocation);
-    } catch (error) {
-      console.error('Error getting location:', error);
-      setErrorMsg('Error getting location');
+  async function getData() {
+    const data = await QueryVisitDashboardData();
+    console.log(data)
+    setdataUser(JSON.parse(await AsyncStorage.getItem("userData")));
+    if (data) {
+      setVisitDashboardData(data);
     }
+  }
+  useEffect(() => {
+    getData();
+  }, []);
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await getData();
+    setRefreshing(false);
   };
+  if (!visitDashboardData) {
+    return (
+      <View>
+        <LoadingApp></LoadingApp>
+      </View>
+    );
+  }
   return (
     <View>
-       <CustomButton title="Get Location" onPress={getLocation} />
-       {errorMsg ? <Text style={styles.errorText}>{errorMsg}</Text> : null}
-      {location ? (
-        <View style={styles.locationInfo}>
-          <Text>Latitude: {location.coords.latitude}</Text>
-          <Text>Longitude: {location.coords.longitude}</Text>
-        </View>
-      ) : null}
-      <ScrollView  style={styles.scrollView}>
-        {Array.from(Array(3).keys()).map((index) => (
-          <Card
-          key={index}
-          title="Title"
-          iconName="location"
-          iconType="Entypo"
-          topRightText="50/301"
-          bottomRightText="30 km"
-          description="Lorem ipsum dolor sit."
-          onPress={() => {}}
-          iconBackgroundColor="black"
-          shadowStyle={styles.cards}
-        />
-        ))}
+      <Greeting username={dataUser?.name}></Greeting>
+      <ScrollView  style={styles.scrollView}  refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }>
+        {visitDashboardData.earrings.length > 0 ? visitDashboardData.earrings.map((x) => (
+            <Card
+            key={x.id}
+            title= {x.client.name}
+            iconName="location"
+            iconType="Entypo"
+            topRightText={x.status}
+            bottomRightText= {x.dateVisit.split('T')[0]}
+            description={x.description}
+            onPress={() => {openModal(x.id)}}
+            iconBackgroundColor="black"
+            shadowStyle={styles.cards}
+            keyExtractor={(item) => item.id}
+          />
+        )): <NoVisitsAnimation></NoVisitsAnimation>}
     </ScrollView>
     <TouchableOpacity 
         style={styles.buttomFloanting} 
-        onPress={() => { alert('Button is pressed') }} 
+        onPress={toggleModal}
     > 
         <Text style={{ color: "white" }}>+</Text> 
     </TouchableOpacity> 
+    <CreateVisitModal isVisible={isModalVisible} onClose={toggleModal} />
+    <UpdateVisitModal
+        isVisible={isModalVisibleUpdate}
+        onClose={closeModal}
+        visitId={selectedVisitId}
+      />
     </View>
   );
 };
@@ -124,6 +148,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'black', 
     borderRadius: 100,
     textAlignVertical: "auto"
+  },
+  helloText: {
+    fontSize: 16,
+    autoCapitalize: true
   }
 });
 
