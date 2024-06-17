@@ -9,6 +9,10 @@
   import InfoScreen from "./src/screens/InfoScreen";
   import { Text, View } from "react-native";
   import Toast from 'react-native-toast-message';
+import VisitScreen from "./src/screens/VisitScreen";
+import VisitDetailScreen from "./src/screens/VisitDetailScreen";
+import ClientsScreen from "./src/screens/ClientsCreen";
+import ClientDetailScreen from "./src/screens/ClientDetailScreen";
 
   const Stack = createNativeStackNavigator();
   const Tab = createBottomTabNavigator();
@@ -39,6 +43,8 @@
         screenOptions={{ headerShown: false }}
       >
         <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="VisitDetail" component={VisitDetailScreen} options={{ title: "Detalle de la Visita" }} />
+        <Stack.Screen name="ClientDetail" component={ClientDetailScreen} options={{ title: 'Detalle del Cliente' }} />
         <Stack.Screen name="MainTabs" component={MainTabs} />
       </Stack.Navigator>
     );
@@ -53,10 +59,21 @@
 
             if (route.name === "Home") {
               iconName = focused ? "home" : "home-outline";
-            } else if (route.name === "Info") {
+            }
+            if(route.name === "Visit"){
+              iconName = focused
+                ? "location"
+                : "location-outline";
+            } 
+            else if (route.name === "Info") {
               iconName = focused
                 ? "information-circle"
                 : "information-circle-outline";
+            }
+            else if (route.name == "Client"){
+              iconName = focused
+              ? "person"
+              : "person-outline";
             }
 
             return <Ionicons name={iconName} size={size} color={"black"} />;
@@ -66,8 +83,10 @@
         <Tab.Screen
           name="Home"
           component={HomeScreen}
-          options={{ title: "MIS VISITAS" }}
+          options={{ title: "HOME" }}
         />
+        <Tab.Screen name="Visit" component={VisitScreen}  options={{ title: "MIS VISTAS" }} />
+        <Tab.Screen name="Client" component={ClientsScreen} options={{ title: "Clientes" }} />
         <Tab.Screen name="Info" component={InfoScreen} />
       </Tab.Navigator>
     );

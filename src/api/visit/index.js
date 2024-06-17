@@ -15,6 +15,9 @@ query findAllVisitDashboard {
       client {
         name
       }
+      type {
+        name
+      }
     }
     realized {
       client {
@@ -37,6 +40,7 @@ export async function QueryVisitDashboardData() {
             'Authorization': `Bearer ${token}`
         }
     });
+    console.log(response.data.errors)
     if (response.data.errors) {
       Toast.show({
         type: 'error',
@@ -101,6 +105,125 @@ export const QueryTypeVisit = async () => {
     return [];
   }
 };
+
+// Función para realizar la petición
+export const QueryVisitOne = async (visitId) => {
+  const token = await AsyncStorage.getItem("userToken");
+  const GET_VISIT_QUERY = `
+  query Visit($visitId: ID!) {
+    visit(id: $visitId) {
+      id
+      createdAt
+      updatedAt
+      deletedAt
+      description
+      location
+      latitude
+      longitude
+      dateVisit
+      status
+      isProyect
+      client {
+        name
+        id
+        address
+        celular
+        email
+        type
+        numberDocument
+      }
+      type {
+        id
+        createdAt
+        updatedAt
+        deletedAt
+        name
+        description
+        status
+      }
+    }
+  }
+`;
+  try {
+    const response = await axios.post(URL_API_GRAPHQL, {
+      query: GET_VISIT_QUERY,
+      variables: { visitId },
+    },
+    {
+      headers: {
+          'Authorization': `Bearer ${token}`
+      }
+  }
+  );
+
+    if (response.data.errors) {
+      handleGraphQLErrors(response.data.errors)
+      return null
+    }
+
+    return response.data.data.visit;
+  } catch (error) {
+    handleGraphQLErrors(error)
+    return null
+  }
+};
+
+
+// Función para obtener las visitas
+export const QueryVisitByUser = async (pagination) => {
+  const {id} = await JSON.parse(await AsyncStorage.getItem("userData"))
+  const token = await AsyncStorage.getItem("userToken");
+  const where = { user: { _eq: id } };
+  // Define la consulta GraphQL
+  const GET_VISITS_QUERY = `
+  query Visits($pagination: Pagination, $where: FindVisitWhere) {
+    visits(pagination: $pagination, where: $where) {
+      id
+      createdAt
+      updatedAt
+      deletedAt
+      description
+      location
+      dateVisit
+      status
+      isProyect
+      client {
+        name
+        id
+      }
+      type {
+        name
+      }
+      user {
+        name
+        id
+      }
+    }
+  }
+  `;
+  try {
+    const response = await axios.post(URL_API_GRAPHQL, {
+      query: GET_VISITS_QUERY,
+      variables: { pagination, where },
+    },
+    {
+      headers: {
+        'Authorization': `Bearer ${token}`
+    }
+    });
+
+    if (response.data.errors) {
+      handleGraphQLErrors(response.data.errors)
+      return null
+    }
+
+    return response.data.data.visits;
+  } catch (error) {
+    handleGraphQLErrors(error)
+    return null
+  }
+};
+
 export const CreateVisit = async (createInput) => {
   try {
     const {id} = await JSON.parse(await AsyncStorage.getItem("userData"))
@@ -128,7 +251,6 @@ export const CreateVisit = async (createInput) => {
         'Authorization': `Bearer ${token}`
     }
     });
-    console.log(response.data.errors)
     if (response.data.errors) {
       handleGraphQLErrors(response.data.errors)
       return null
@@ -170,3 +292,88 @@ export const UpdateVisit = async (updateInput) => {
     return null
   }
 }
+export const CreateVisitComment = async (createInput) => {
+  try {
+    const token = await AsyncStorage.getItem("userToken");
+    const response = await axios.post(URL_API_GRAPHQL, {
+      query: `
+        mutation CreateVisitComent($createInput: CreateVisitComentInput!) {
+          createVisitComent(createInput: $createInput) {
+            description
+            id
+            type
+            visit {
+              description
+              id
+              latitude
+            }
+            user {
+              email
+              id
+            }
+          }
+        }
+      `,
+      variables: {
+        createInput: createInput
+      },
+    },
+    {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (response.data.errors) {
+      handleGraphQLErrors(response.data.errors);
+      return null;
+    }
+    return response;
+  } catch (err) {
+    handleGraphQLErrors(err);
+    return null;
+  }
+}
+
+export const QueryVisitComments = async (visitId) => {
+  const token = await AsyncStorage.getItem("userToken");
+  try {
+    const response = await axios.post(URL_API_GRAPHQL, {
+      query: `
+        query VisitComents($orderBy: [FindVisitComentOrderBy!], $where: FindVisitComentWhere) {
+          visitComents(orderBy: $orderBy, where: $where) {
+            user {
+              name
+            }
+            description
+            type
+            createdAt
+            id
+          }
+        }
+      `,
+      variables: {
+        orderBy: [
+          { createdAt: "ASC" }
+        ],
+        where: {
+          visit: {
+            _eq: visitId
+          }
+        }
+      }
+    },    {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (response.data.errors) {
+      handleGraphQLErrors(response.data.errors);
+      return [];
+    }
+
+    return response.data.data.visitComents;
+  } catch (error) {
+    handleGraphQLErrors(error);
+    return [];
+  }
+};

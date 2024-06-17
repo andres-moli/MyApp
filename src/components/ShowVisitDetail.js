@@ -7,7 +7,11 @@ import { URL_API_GRAPHQL } from '../constants';
 import { QueryVisitOne, UpdateVisit } from '../api/visit';
 import Toast from 'react-native-toast-message';
 import { Ionicons } from '@expo/vector-icons';
-export const UpdateVisitModal = ({ isVisible, onClose, visitId }) => {
+import Icon from 'react-native-vector-icons/FontAwesome'; 
+import { useNavigation } from '@react-navigation/native';
+import MapScreen from './Map';
+export const ShowVisitDetailScreen = ({visitId }) => {
+  const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
   const [visit, setVisit] = useState(null);
   const confirmUpdate = (realized = null) => {
@@ -41,10 +45,10 @@ export const UpdateVisitModal = ({ isVisible, onClose, visitId }) => {
           text1: '!MUY BIEN!',
           text2: 'La visita se actualizo con éxito',
         })
-        onClose();
-        return
+        setTimeout(() =>{
+          navigation.navigate('MainTabs');
+        }, 1000)
        }
-       onClose();
        return
     } catch (error) {
       console.error('Error updating visit:', error);
@@ -57,14 +61,14 @@ export const UpdateVisitModal = ({ isVisible, onClose, visitId }) => {
   const handleCancelVisit = () => {
     handleUpdateVisit('canceled');
   };
-  if(visitId){
+  useEffect( () =>{
     QueryVisitOne(visitId).then((response) => {
-      setVisit(response);
-    })
-  }
+        setVisit(response);
+      })
+  }, [])
+
 
   const handleRealizeVisit = async () => {
-    isVisible = false
     setLoading(true);
     let { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
@@ -79,15 +83,11 @@ export const UpdateVisitModal = ({ isVisible, onClose, visitId }) => {
   };
 
   return (
-    <Modal visible={isVisible} transparent={true} animationType="slide">
       <View style={styles.overlay}>
         <View style={styles.container}>
-        <View style={stylesModal.header}>
-          <TouchableOpacity onPress={onClose} style={stylesModal.closeButton}>
-            <Ionicons name="close" size={24} color="black" />
-          </TouchableOpacity>
+        {/* <View style={stylesModal.header}>
           <Text style={stylesModal.title}>Datos de la visita</Text>
-        </View>
+        </View> */}
           {loading ? (
             <View style={styles.loadingContainer}>
               <LottieView
@@ -100,55 +100,74 @@ export const UpdateVisitModal = ({ isVisible, onClose, visitId }) => {
             </View>
           ) : (
             <>
-                <View style={stylesModal.labelContainer}>
-                  <Text style={stylesModal.label}>Cliente</Text>
-                  <Text style={stylesModal.value}>{visit?.client?.name}</Text>
+            <View style={stylesModal.labelContainer}>
+                <Text style={stylesModal.label}><Icon name="user" size={20} color="#333" /> Nombre del cliente</Text>
+                <Text style={stylesModal.value}>{visit?.client?.name}</Text>
+            </View>
+            <View style={stylesModal.divider} />
+            <View style={stylesModal.labelContainer}>
+                <Text style={stylesModal.label}><Icon name="map" size={20} color="#333" /> Dirección del cliente</Text>
+                <Text style={stylesModal.value}>{visit?.client?.address}</Text>
+            </View>
+            <View style={stylesModal.divider} />
+            <View style={stylesModal.labelContainer}>
+                <Text style={stylesModal.label}><Icon name="envelope-o" size={20} color="#333" /> Correo electrónico</Text>
+                <Text style={stylesModal.value}>{visit?.client?.email}</Text>
+            </View>
+            <View style={stylesModal.divider} />
+            <View style={stylesModal.labelContainer}>
+                <Text style={stylesModal.label}><Icon name="phone" size={20} color="#333" /> Número de celular</Text>
+                <Text style={stylesModal.value}>{visit?.client?.celular}</Text>
+            </View>
+            <View style={stylesModal.divider} />
+            <View style={stylesModal.labelContainer}>
+                <Text style={stylesModal.label}><Icon name="clipboard" size={20} color="#333" /> ¿Tiene proyecto?</Text>
+                <Text style={stylesModal.value}>{visit ? visit?.isProyect ? 'SI' : 'NO' : ''}</Text>
+            </View>
+            <View style={stylesModal.divider} />
+            <View style={stylesModal.labelContainer}>
+                <Text style={stylesModal.label}><Icon name="calendar" size={20} color="#333" /> Fecha de la visita</Text>
+                <Text style={stylesModal.value}>{visit?.dateVisit.split('T')[0]}</Text>
+            </View>
+            <View style={stylesModal.divider} />
+            <View style={stylesModal.labelContainer}>
+                <Text style={stylesModal.label}><Icon name="tag" size={20} color="#333" /> Tipo de la visita</Text>
+                <Text style={stylesModal.value}>{visit?.type?.name}</Text>
+            </View>
+            <View style={stylesModal.divider} />
+            <View style={stylesModal.labelContainer}>
+                <Text style={stylesModal.label}><Icon name="file-o" size={20} color="#333" /> Descripción</Text>
+                <View style={stylesModal.descriptionContainer}>
+                <ScrollView>
+                    <Text style={stylesModal.value}>{visit?.description}</Text>
+                </ScrollView>
                 </View>
-                <View style={stylesModal.labelContainer}>
-                  <Text style={stylesModal.label}>¿Tiene proyecto?</Text>
-                  <Text style={stylesModal.value}>{visit ? visit?.isProyect ? 'SI' : 'NO' : ''}</Text>
-                </View>
-                <View style={stylesModal.labelContainer}>
-                  <Text style={stylesModal.label}>Fecha de Visita</Text>
-                  <Text style={stylesModal.value}>{visit?.dateVisit.split('T')[0]}</Text>
-                </View>
-                <View style={stylesModal.labelContainer}>
-                  <Text style={stylesModal.label}>Descripción</Text>
-                  <View style={stylesModal.descriptionContainer}>
-                    <ScrollView>
-                      <Text style={stylesModal.value}>{visit?.description}</Text>
-                    </ScrollView>
-                  </View>
-                </View>
-              <TouchableOpacity style={styles.buttonCancelar} onPress={ ()=> confirmUpdate()}>
-                <Text style={styles.buttonText}>Cancelar Visita</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.button} onPress={ ()=>confirmUpdate("realizar")}>
-                <Text style={styles.buttonText}>Realizar Visita</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-                <Text style={styles.cancelButtonText}>Cerrar</Text>
-              </TouchableOpacity>
+            </View>
+            {(visit?.status == 'confirmed' || visit?.status == 'reprogrammed') && (
+                <>
+                <View style={stylesModal.divider} />
+                <TouchableOpacity style={styles.buttonCancelar} onPress={() => confirmUpdate()}>
+                    <Text style={styles.buttonText}><Icon name="remove" size={20} color="#fff" /> Cancelar Visita</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={() => confirmUpdate("realizar")}>
+                    <Text style={styles.buttonText}><Icon name="check" size={20} color="#fff" /> Realizar Visita</Text>
+                </TouchableOpacity>
+                </>
+            )}
+               <MapScreen></MapScreen>
             </>
           )}
         </View>
       </View>
-    </Modal>
+ 
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
   container: {
-    width: '90%',
-    backgroundColor: 'white',
+    width: '100%',
     borderRadius: 10,
-    padding: 20,
+    padding: 10,
   },
   header: {
     fontSize: 18,
@@ -253,4 +272,4 @@ const stylesModal = StyleSheet.create({
     marginTop: 5,
   },
 });
-export default UpdateVisitModal;
+export default ShowVisitDetailScreen;

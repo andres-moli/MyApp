@@ -9,7 +9,7 @@ export const LoadingApp = () => {
           loop
           style={styles.loadingAnimation}
         />
-        <Text style={styles.loadingText}>Cargando...</Text>
+        {/* <Text style={styles.loadingText}>Cargando...</Text> */}
       </View>
     )
 }

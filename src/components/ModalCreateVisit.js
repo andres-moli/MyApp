@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, TextInput,StyleSheet ,TouchableOpacity,Alert  } from 'react-native';
+import { View, Text, Button, TextInput,StyleSheet ,TouchableOpacity, Switch } from 'react-native';
 import Modal from 'react-native-modal';
 import RNPickerSelect from 'react-native-picker-select';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
@@ -12,7 +12,7 @@ import { LoadingApp } from "../function/loading";
 
 const CREATE_VISIT_URL = 'http://your-api-url.com/createVisit'; // Reemplaza esta URL por la URL de tu endpoint de creación de visita
 
-export const CreateVisitModal = ({ isVisible, onClose }) => {
+export const CreateVisitModal = ({ isVisible, onClose,onRefresh, toggleModal }) => {
   const [selectedClientId, setSelectedClientId] = useState('');
   const [selectedTypeId, setSelectedTypeId] = useState('');
   const [description, setDescription] = useState('');
@@ -32,8 +32,8 @@ export const CreateVisitModal = ({ isVisible, onClose }) => {
         })
         // Llamar al servicio para obtener los tipos
     }, []);
-
-const handleCreateVisit = () => {
+  const toggleSwitch = () => setIsProject(previousState => !previousState);
+  const handleCreateVisit = () => {
     setLoading(true);
     // Realizar la llamada a la API para crear la visita
     CreateVisit({
@@ -52,6 +52,13 @@ const handleCreateVisit = () => {
         text2: 'La visita se creo con éxito',
       });
         onClose();
+        onRefresh()
+    }
+    if(!response){
+      onClose();
+      setTimeout(() => {
+        toggleModal()
+      }, 2000);
     }
     })
     .catch(error => {
@@ -62,7 +69,7 @@ const handleCreateVisit = () => {
   };
 
   return (
-    <Modal isVisible={isVisible} onBackdropPress={onClose}>
+    <Modal isVisible={isVisible} onBackdropPress={onClose} finally={onRefresh} toggleModal={toggleModal} >
     <View style={styles.container}>
       <Text style={styles.header}>Crear una visita</Text>
       {loading ? <LoadingApp></LoadingApp> : <></>}
@@ -85,6 +92,14 @@ const handleCreateVisit = () => {
         styles={pickerSelectStyles.inputAndroid}
         darkTheme ={true}
         placeholder={{ label: "Selecione un tipo de visita", value: null }}
+      />
+      <Text style={styles.label}>{"¿Tiene proyecto? (NO / SI)"}</Text>
+      <Switch
+        trackColor={{ false: '#767577', true: '#0ac729' }}
+        thumbColor={isProyect ? '#f4f3f4' : '#f4f3f4'}
+        ios_backgroundColor="#3e3e3e"
+        onValueChange={toggleSwitch}
+        value={isProyect}
       />
       <Text style={styles.label}>Descripción:</Text>
       <TextInput
@@ -139,11 +154,12 @@ const styles = StyleSheet.create({
     },
     input: {
       borderWidth: 1,
-      borderColor: 'lightgray',
-      borderRadius: 5,
-      paddingVertical: 8,
-      paddingHorizontal: 12,
-      marginBottom: 15,
+      borderColor: 'gray',
+      padding: 10,
+      marginBottom: 20,
+      width: '100%',
+      minHeight: 100,
+      textAlignVertical: "top"
     },
     select: {
       inputIOS: {

@@ -37,7 +37,6 @@ const HomeScreen = ({ navigation, }) => {
   };
   async function getData() {
     const data = await QueryVisitDashboardData();
-    console.log(data)
     setdataUser(JSON.parse(await AsyncStorage.getItem("userData")));
     if (data) {
       setVisitDashboardData(data);
@@ -72,8 +71,8 @@ const HomeScreen = ({ navigation, }) => {
             iconType="Entypo"
             topRightText={x.status}
             bottomRightText= {x.dateVisit.split('T')[0]}
-            description={x.description}
-            onPress={() => {openModal(x.id)}}
+            description={x.type.name}
+            onPress={() => navigation.navigate('VisitDetail', { visitId: x.id })}
             iconBackgroundColor="black"
             shadowStyle={styles.cards}
             keyExtractor={(item) => item.id}
@@ -86,7 +85,7 @@ const HomeScreen = ({ navigation, }) => {
     > 
         <Text style={{ color: "white" }}>+</Text> 
     </TouchableOpacity> 
-    <CreateVisitModal isVisible={isModalVisible} onClose={toggleModal} />
+    <CreateVisitModal isVisible={isModalVisible} onClose={toggleModal} onRefresh={onRefresh} toggleModal={toggleModal} />
     <UpdateVisitModal
         isVisible={isModalVisibleUpdate}
         onClose={closeModal}
@@ -102,6 +101,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    width: '80%',
+    maxHeight: '80%',
   },
   headerText: {
     fontSize: 24,
@@ -142,7 +143,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center', 
     width: 70, 
     position: 'absolute', 
-    top: 390, 
+    top: 590, 
     right: 20, 
     height: 70, 
     backgroundColor: 'black', 
