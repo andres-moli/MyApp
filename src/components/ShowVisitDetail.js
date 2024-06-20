@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Modal, StyleSheet, ActivityIndicator,ScrollView, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Linking, StyleSheet, ActivityIndicator,ScrollView, Alert } from 'react-native';
 import axios from 'axios';
 import * as Location from 'expo-location';
 import LottieView from 'lottie-react-native';
@@ -10,6 +10,8 @@ import { Ionicons } from '@expo/vector-icons';
 import Icon from 'react-native-vector-icons/FontAwesome'; 
 import { useNavigation } from '@react-navigation/native';
 import MapScreen from './Map';
+import { makePhoneCall, sendEmail } from '../function/notificaction.function';
+import MapComponent from './Map';
 export const ShowVisitDetailScreen = ({visitId }) => {
   const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
@@ -112,12 +114,12 @@ export const ShowVisitDetailScreen = ({visitId }) => {
             <View style={stylesModal.divider} />
             <View style={stylesModal.labelContainer}>
                 <Text style={stylesModal.label}><Icon name="envelope-o" size={20} color="#333" /> Correo electrónico</Text>
-                <Text style={stylesModal.value}>{visit?.client?.email}</Text>
+                <Text style={stylesModal.value}  onPress={() => sendEmail(visit?.client?.email)}>{visit?.client?.email}</Text>
             </View>
             <View style={stylesModal.divider} />
             <View style={stylesModal.labelContainer}>
                 <Text style={stylesModal.label}><Icon name="phone" size={20} color="#333" /> Número de celular</Text>
-                <Text style={stylesModal.value}>{visit?.client?.celular}</Text>
+                <Text style={stylesModal.value} onPress={() => makePhoneCall(visit?.client?.celular)}>{visit?.client?.celular}</Text>
             </View>
             <View style={stylesModal.divider} />
             <View style={stylesModal.labelContainer}>
@@ -143,6 +145,9 @@ export const ShowVisitDetailScreen = ({visitId }) => {
                 </ScrollView>
                 </View>
             </View>
+            <>
+            <MapComponent latitude={37.78825} longitude={-122.4324}></MapComponent>
+            </>
             {(visit?.status == 'confirmed' || visit?.status == 'reprogrammed') && (
                 <>
                 <View style={stylesModal.divider} />
@@ -154,7 +159,6 @@ export const ShowVisitDetailScreen = ({visitId }) => {
                 </TouchableOpacity>
                 </>
             )}
-               <MapScreen></MapScreen>
             </>
           )}
         </View>

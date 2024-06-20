@@ -6,6 +6,8 @@ import ShowVisitDetailScreen from '../components/ShowVisitDetail';
 import CreateCommentModal from '../components/ModalCreateComent';
 import { QueryVisitComments } from '../api/visit';
 import MapScreen from '../components/Map';
+import { NoVisitsAnimation } from '../function/notVisit';
+import MapComponent from '../components/Map';
 
 const VisitDetailScreen = ({ route, navigation }) => {
   const { visitId } = route.params;
@@ -74,6 +76,9 @@ const VisitDetailScreen = ({ route, navigation }) => {
         </View>
       </TouchableOpacity>
       <Collapsible collapsed={isCollapsedObservations}>
+      {
+        comments.filter(comment => comment.type === 'RESULTS').length > 0
+        ? <>
         <View style={styles.content}>
           <FlatList
             data={comments.filter(comment => comment.type === 'RESULTS')}
@@ -81,6 +86,8 @@ const VisitDetailScreen = ({ route, navigation }) => {
             keyExtractor={item => item.id.toString()}
           />
         </View>
+        </> : <NoVisitsAnimation text='No se tienes comentarios de resultados'></NoVisitsAnimation> 
+      }
       </Collapsible>
 
       <TouchableOpacity onPress={() => setIsCollapsedComments(!isCollapsedComments)}>
@@ -90,15 +97,20 @@ const VisitDetailScreen = ({ route, navigation }) => {
         </View>
       </TouchableOpacity>
       <Collapsible collapsed={isCollapsedComments}>
-        <View style={styles.content}>
+      {
+        comments.filter(comment => comment.type === 'COMMITMENTS').length > 0
+        ? <>
+          <View style={styles.content}>
           <FlatList
             data={comments.filter(comment => comment.type === 'COMMITMENTS')}
             renderItem={renderCommentCard}
             keyExtractor={item => item.id.toString()}
           />
         </View>
+        </> : <NoVisitsAnimation text='No se tienes comentarios de compromisos'></NoVisitsAnimation> 
+      }
       </Collapsible>
-  
+      
 
       <Modal
         visible={modalVisible}

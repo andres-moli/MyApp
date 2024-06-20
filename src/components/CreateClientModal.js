@@ -63,7 +63,6 @@ const CreateClientModal = ({ isVisible, onClose, onCreate }) => {
 
   const handleSubmit = () => {
     onCreate(clientData);
-    clearData()
   };
 
   return (
@@ -203,7 +202,6 @@ const CreateClientModal = ({ isVisible, onClose, onCreate }) => {
             ]}
           />
         </View>
-        
         <View style={styles.buttonContainer}>
           <Button title="Crear Cliente" onPress={handleSubmit} />
           <Button title="Cancelar" onPress={onClose} color="red" />
@@ -245,7 +243,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 30,
-    marginTop: 20,
+    marginTop: 5,
     backgroundColor: 'white',
   },
   title: {
@@ -254,7 +252,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   inputContainer: {
-    marginBottom: 15,
+    marginBottom: 5,
   },
   label: {
     fontWeight: 'bold',

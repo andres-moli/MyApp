@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import LottieView from 'lottie-react-native';
 
-export const NoVisitsAnimation = () => {
+export const NoVisitsAnimation = ({text = "No tienes visitas para realizar :("}) => {
   return (
     <View style={styles.container}>
       <LottieView
@@ -11,7 +11,7 @@ export const NoVisitsAnimation = () => {
         loop
         style={styles.animation}
       />
-      <Text style={styles.text}>No tienes visitas para realizar :(</Text>
+      <Text style={styles.text}>{text}</Text>
     </View>
   );
 };
@@ -28,7 +28,6 @@ const styles = StyleSheet.create({
     height: 300,
   },
   text: {
-    marginTop: 20,
     fontSize: 18,
     color: 'gray',
   },

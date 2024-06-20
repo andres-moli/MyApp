@@ -23,6 +23,13 @@ export const CreateVisitModal = ({ isVisible, onClose,onRefresh, toggleModal }) 
   const [clients, setClients] = useState([]);
   const [types, setTypes] = useState([]);
   const [loading, setLoading] = useState(false);
+  const clearData = () => {
+    setSelectedClientId("")
+    setSelectedTypeId("")
+    setDescription("")
+    setIsProject(false)
+    setVisitDate(null)
+  }
     useEffect( () => {
         QueryClients().then((response) => {
             setClients(response);
@@ -46,6 +53,7 @@ export const CreateVisitModal = ({ isVisible, onClose,onRefresh, toggleModal }) 
     })
     .then(response => {
     if(response){
+      clearData()
       Toast.show({
         type: 'success',
         text1: '!MUY BIEN!',
