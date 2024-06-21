@@ -19,12 +19,6 @@ query findAllVisitDashboard {
         name
       }
     }
-    realized {
-      client {
-        name
-      }
-      dateVisit
-    }
   }
 }
 `;

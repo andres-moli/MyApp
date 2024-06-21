@@ -3,6 +3,7 @@ import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LottieView from 'lottie-react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
+import { URL_API_GRAPHQL } from '../constants';
 
 const InfoScreen = ({ navigation }) => {
   const [user, setUser] = useState(null);
@@ -37,7 +38,7 @@ const InfoScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Información del Usuario</Text>
+      <Text style={styles.title} onLongPress={()=> alert(URL_API_GRAPHQL)}>Información del Usuario</Text>
       {user && (
         <>
           <View style={styles.card}>

@@ -7,13 +7,14 @@
   import LoginScreen from "./src/screens/LoginScreen";
   import HomeScreen from "./src/screens/HomeScreen";
   import InfoScreen from "./src/screens/InfoScreen";
-  import { Text, View } from "react-native";
+  import { Text, View, Animated, StyleSheet, TouchableOpacity } from "react-native";
   import Toast from 'react-native-toast-message';
 import VisitScreen from "./src/screens/VisitScreen";
 import VisitDetailScreen from "./src/screens/VisitDetailScreen";
 import ClientsScreen from "./src/screens/ClientsCreen";
 import ClientDetailScreen from "./src/screens/ClientDetailScreen";
-
+import TasksScreen from "./src/screens/TasksScreen";
+import { CurvedBottomBarExpo } from 'react-native-curved-bottom-bar';
   const Stack = createNativeStackNavigator();
   const Tab = createBottomTabNavigator();
 
@@ -48,12 +49,52 @@ import ClientDetailScreen from "./src/screens/ClientDetailScreen";
         <Stack.Screen name="MainTabs" component={MainTabs} />
       </Stack.Navigator>
     );
+    const _renderIcon = (routeName, selectedTab) => {
+      let iconName = '';
 
+      switch (routeName) {
+        case 'Home':
+          iconName = selectedTab === routeName ? 'home' : 'home-outline';
+          break;
+        case 'Visit':
+          iconName = selectedTab === routeName ? 'location' : 'location-outline';
+          break;
+        case 'Info':
+          iconName = selectedTab === routeName ? 'information-circle' : 'information-circle-outline';
+          break;
+        case 'Client':
+          iconName = selectedTab === routeName ? 'person' : 'person-outline';
+          break;
+        case 'Task':
+          iconName = selectedTab === routeName ? 'bag-check' : 'bag-check-outline';
+          break;
+        default:
+          iconName = 'home-outline';
+      }
+
+      return <Ionicons name={iconName} size={25} color={selectedTab === routeName ? 'black' : 'gray'} />;
+    };
+    const renderTabBar = ({ routeName, selectedTab, navigate }) => {
+      return (
+        <TouchableOpacity
+          onPress={() => navigate(routeName)}
+          style={styles.tabbarItem}
+        >
+          {_renderIcon(routeName, selectedTab)}
+        </TouchableOpacity>
+      );
+    }
     const MainTabs = () => (
-      <Tab.Navigator
-      initialRouteName="Home"
+      <CurvedBottomBarExpo.Navigator
+        type="DOWN"
+        initialRouteName="Home"
+        style={styles.bottomBar}
+        shadowStyle={styles.shawdow}
+        height={55}
+        circleWidth={50}
+        bgColor="white"
         screenOptions={({ route }) => ({
-          tabBarActiveTintColor: "black",
+        tabBarActiveTintColor: "black",
           tabBarIcon: ({ focused, color, size }) => {
             let iconName;
 
@@ -75,20 +116,38 @@ import ClientDetailScreen from "./src/screens/ClientDetailScreen";
               ? "person"
               : "person-outline";
             }
+            else if (route.name == "Task"){
+              iconName = focused
+              ? "bag-check"
+              : "bag-check-outline";
+            }
 
             return <Ionicons name={iconName} size={size} color={"black"} />;
           },
         })}
+        borderTopLeftRight
+        renderCircle={({ selectedTab, navigate }) => (
+          <Animated.View style={styles.btnCircleUp}>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => navigate("Home")}
+            >
+              <Ionicons name={'home-outline'} color="gray" size={25} />
+            </TouchableOpacity>
+          </Animated.View>
+        )}
+        tabBar={renderTabBar}
       >
-        <Tab.Screen
+        <CurvedBottomBarExpo.Screen name="Visit" component={VisitScreen}  options={{ title: "MIS VISTAS" }} position="LEFT" />
+        <CurvedBottomBarExpo.Screen name="Client" component={ClientsScreen} options={{ title: "Clientes" }}  position="LEFT"/>
+        <CurvedBottomBarExpo.Screen
           name="Home"
           component={HomeScreen}
           options={{ title: "HOME" }}
         />
-        <Tab.Screen name="Visit" component={VisitScreen}  options={{ title: "MIS VISTAS" }} />
-        <Tab.Screen name="Client" component={ClientsScreen} options={{ title: "Clientes" }} />
-        <Tab.Screen name="Info" component={InfoScreen} />
-      </Tab.Navigator>
+        <CurvedBottomBarExpo.Screen name="Task" component={TasksScreen} options={{ title: "Tareas" }} position="RIGHT" />
+        <CurvedBottomBarExpo.Screen name="Info" component={InfoScreen} position="RIGHT" />
+      </CurvedBottomBarExpo.Navigator>
     );
 
     return (
@@ -98,5 +157,63 @@ import ClientDetailScreen from "./src/screens/ClientDetailScreen";
       </NavigationContainer>
     );
   };
-
-  export default App;
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 20,
+    },
+    shawdow: {
+      shadowColor: '#DDDDDD',
+      shadowOffset: {
+        width: 0,
+        height: 0,
+      },
+      shadowOpacity: 1,
+      shadowRadius: 5,
+    },
+    button: {
+      flex: 1,
+      justifyContent: 'center',
+    },
+    bottomBar: {},
+    btnCircleUp: {
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#E8E8E8',
+      bottom: 30,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.2,
+      shadowRadius: 1.41,
+      elevation: 1,
+    },
+    imgCircle: {
+      width: 30,
+      height: 30,
+      tintColor: 'gray',
+    },
+    tabbarItem: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    img: {
+      width: 30,
+      height: 30,
+    },
+    screen1: {
+      flex: 1,
+      backgroundColor: '#BFEFFF',
+    },
+    screen2: {
+      flex: 1,
+      backgroundColor: '#FFEBCD',
+    },
+  });
+export default App;

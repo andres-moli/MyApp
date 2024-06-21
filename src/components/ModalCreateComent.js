@@ -20,7 +20,8 @@ const CreateCommentModal = ({ visible, visitId, onClose, onRefesh }) => {
         return
       }
       setLoading(true);
-      const response = await CreateVisitComment({type,description,visitId})
+      let status = type == 'COMMITMENTS' ? 'PENDINIG' : null
+      const response = await CreateVisitComment({type,description,visitId,status})
       if(response){
         Toast.show({
             type: 'success',

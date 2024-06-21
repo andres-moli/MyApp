@@ -45,7 +45,7 @@ const CreateClientContactModal = ({ isVisible, onClose, onCreate, clientId }) =>
                 />
               </View>
             </View>
-            <View style={styles.inputContainer}>
+            {/* <View style={styles.inputContainer}>
               <Text style={styles.label}>Número de Documento</Text>
               <View style={styles.inputWrapper}>
                 <FontAwesome5 name="id-card" size={20} color="black" style={styles.icon} />
@@ -56,7 +56,7 @@ const CreateClientContactModal = ({ isVisible, onClose, onCreate, clientId }) =>
                   onChangeText={(value) => handleInputChange('numberDocument', value)}
                 />
               </View>
-            </View>
+            </View> */}
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Email</Text>
               <View style={styles.inputWrapper}>
@@ -94,7 +94,7 @@ const CreateClientContactModal = ({ isVisible, onClose, onCreate, clientId }) =>
               </View>
             </View>
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Posición</Text>
+              <Text style={styles.label}>Cargo</Text>
               <View style={styles.inputWrapper}>
                 <FontAwesome5 name="briefcase" size={20} color="black" style={styles.icon} />
                 <TextInput

@@ -5,11 +5,12 @@ import { handleGraphQLErrors } from '../../function/erros.function';
 
 export const QueryClients = async () => {
   const token = await AsyncStorage.getItem("userToken");
+  const {id} = await JSON.parse(await AsyncStorage.getItem("userData"))
   try {
     const response = await axios.post(URL_API_GRAPHQL, {
       query: `
-        query Clients {
-          clients {
+        query Clients($where: FindClientWhere) {
+          clients(where: $where) {
             id
             createdAt
             updatedAt
@@ -21,7 +22,14 @@ export const QueryClients = async () => {
             celular
           }
         }
-      `
+      `,
+      variables: { 
+        where: {
+          user: {
+            _eq: id
+          }
+        } 
+      },
     }, 
     {
         headers: {
@@ -40,10 +48,11 @@ export const QueryClients = async () => {
 export const fetchClients = async (pagination) => {
   try {
     const token = await AsyncStorage.getItem("userToken");
+    const {id} = await JSON.parse(await AsyncStorage.getItem("userData"))
     const response = await axios.post(URL_API_GRAPHQL, {
       query: `
-        query Clients($pagination: Pagination) {
-          clients(pagination: $pagination) {
+        query Clients($pagination: Pagination, $where: FindClientWhere) {
+          clients(pagination: $pagination, where: $where) {
             id
             createdAt
             updatedAt
@@ -56,7 +65,14 @@ export const fetchClients = async (pagination) => {
           }
         }
       `,
-      variables: { pagination },
+      variables: { 
+        pagination,  
+        where: {
+          user: {
+            _eq: id
+          }
+        } 
+      },
     },
     {
       headers: {
@@ -76,32 +92,42 @@ export const fetchClients = async (pagination) => {
 };
 
 export const createClient = async (createInput) => {
-  const token = await AsyncStorage.getItem("userToken");
-  const response = await axios.post(URL_API_GRAPHQL, {
-    query: `
-      mutation CreateClient($createInput: CreateClientInput!) {
-        createClient(createInput: $createInput) {
-          id
-          name
-          numberDocument
-          celular
-          createdAt
-          city {
+  try {
+    const token = await AsyncStorage.getItem("userToken");
+    const {id} = await JSON.parse(await AsyncStorage.getItem("userData"))
+    const response = await axios.post(URL_API_GRAPHQL, {
+      query: `
+        mutation CreateClient($createInput: CreateClientInput!) {
+          createClient(createInput: $createInput) {
+            id
             name
-          }
-          department {
-            name
+            numberDocument
+            celular
+            createdAt
+            city {
+              name
+            }
+            department {
+              name
+            }
           }
         }
+      `,
+      variables: { createInput: {...createInput, userId: id}  },
+    },  {
+      headers: {
+        'Authorization': `Bearer ${token}`
       }
-    `,
-    variables: { createInput },
-  },  {
-    headers: {
-      'Authorization': `Bearer ${token}`
+    });
+    if (response.data.errors) {
+      handleGraphQLErrors(response.data.errors)
+      return null
     }
-  });
-  return response.data.data.createClient;
+    return true;
+  }catch (err){
+    handleGraphQLErrors(err)
+    return null
+  }
 };
 
 export const fetchDepartments = async () => {

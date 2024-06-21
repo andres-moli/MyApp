@@ -12,11 +12,16 @@ import { useNavigation } from '@react-navigation/native';
 import MapScreen from './Map';
 import { makePhoneCall, sendEmail } from '../function/notificaction.function';
 import MapComponent from './Map';
+import dayjs from 'dayjs';
 export const ShowVisitDetailScreen = ({visitId }) => {
   const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
   const [visit, setVisit] = useState(null);
   const confirmUpdate = (realized = null) => {
+    if(realized && !(dayjs().isSame(visit?.dateVisit, 'day'))){
+      alert("No puedes realizar la visita hasta que no sea el dia")
+      return
+    }
     Alert.alert(
       "Confirmación",
       "¿Estás seguro de que deseas continuar?",

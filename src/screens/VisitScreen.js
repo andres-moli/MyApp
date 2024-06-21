@@ -1,46 +1,45 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, Button, ActivityIndicator, RefreshControl, SafeAreaView } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+  RefreshControl,
+  SafeAreaView,
+  ScrollView,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Card } from '../components/Cards';
 import { QueryVisitByUser } from '../api/visit';
+import { NoVisitsAnimation } from '../function/notVisit';
 
 const VisitScreen = () => {
   const navigation = useNavigation();
   const [visits, setVisits] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    loadMoreVisits();
+    loadVisits();
   }, []);
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    setVisits([]);
-    await loadMoreVisits();
-    setRefreshing(false);
-  };
-
-  const loadMoreVisits = async () => {
-
-    if (loading || !hasMore) return;
-
+  const loadVisits = async () => {
     setLoading(true);
-
-    const pagination = { skip: page * 10, take: 10 };
-
     try {
-      const newVisits = await QueryVisitByUser(pagination);
-      setVisits([...visits, ...newVisits]);
-      setPage(page + 1);
-      setHasMore(newVisits.length > 0);
+      const newVisits = await QueryVisitByUser();
+      setVisits(newVisits);
     } catch (error) {
-      console.error('Error loading more visits:', error);
+      console.error('Error loading visits:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadVisits();
+    setRefreshing(false);
   };
 
   const handlePress = (visitId) => {
@@ -56,26 +55,33 @@ const VisitScreen = () => {
       topRightText={item.status}
       bottomRightText={item.dateVisit.split('T')[0]}
       description={item.type?.name}
-      onPress={() => {
-        handlePress(item.id);
-      }}
+      onPress={() => handlePress(item.id)}
       iconBackgroundColor="black"
       shadowStyle={styles.cards}
-      keyExtractor={(item) => item.id}
     />
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      <FlatList
-        data={visits}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        onEndReached={loadMoreVisits}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={loading ? <ActivityIndicator size="large" /> : null}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      />
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" />
+        </View>
+      ) : visits.length === 0 ? (
+        <ScrollView
+          contentContainerStyle={styles.noDataContainer}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        >
+          <NoVisitsAnimation text="No tienes visitas"></NoVisitsAnimation>
+        </ScrollView>
+      ) : (
+        <FlatList
+          data={visits}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        />
+      )}
     </SafeAreaView>
   );
 };
@@ -118,6 +124,20 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 20,
     paddingHorizontal: 10,
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noDataContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noDataText: {
+    fontSize: 18,
+    color: 'gray',
   },
 });
 
