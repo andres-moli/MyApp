@@ -10,6 +10,7 @@ import { Card } from '../components/Cards';
 import { NoVisitsAnimation } from '../function/notVisit';
 import { Greeting } from '../components/Greeting';
 import { LoadingApp } from '../function/loading';
+import { FontAwesome5 } from '@expo/vector-icons';
 
 dayjs.locale("es");
 
@@ -39,6 +40,7 @@ const HomeScreen = ({ navigation, }) => {
     const data = await QueryVisitDashboardData();
     setdataUser(JSON.parse(await AsyncStorage.getItem("userData")));
     if (data) {
+      console.log(data)
       setVisitDashboardData(data);
     }
   }
@@ -70,7 +72,7 @@ const HomeScreen = ({ navigation, }) => {
             iconName="location"
             iconType="Entypo"
             topRightText={x.status}
-            bottomRightText= {x.dateVisit.split('T')[0]}
+            bottomRightText= {dayjs(x.dateVisit).format("YYYY-MM-DD HH:mm:ss")}
             description={x.type.name}
             onPress={() => navigation.navigate('VisitDetail', { visitId: x.id })}
             iconBackgroundColor="black"
@@ -83,9 +85,9 @@ const HomeScreen = ({ navigation, }) => {
         style={styles.buttomFloanting} 
         onPress={toggleModal}
     > 
-        <Text style={{ color: "white" }}>+</Text> 
+      <FontAwesome5 name="plus" size={24} color="white" />
     </TouchableOpacity> 
-    <CreateVisitModal isVisible={isModalVisible} onClose={toggleModal} onRefresh={onRefresh} toggleModal={toggleModal} />
+    <CreateVisitModal isVisible={isModalVisible} onClose={toggleModal} onRefresh={onRefresh} toggleModal={toggleModal} navigation={navigation} />
     <UpdateVisitModal
         isVisible={isModalVisibleUpdate}
         onClose={closeModal}
@@ -138,7 +140,6 @@ const styles = StyleSheet.create({
   },
   buttomFloanting: {
     borderWidth: 1, 
-    borderColor: '#fff', 
     alignItems: 'center', 
     justifyContent: 'center', 
     width: 70, 

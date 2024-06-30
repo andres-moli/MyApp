@@ -1,31 +1,26 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet, Modal, ScrollView, Text, KeyboardAvoidingView, Platform } from 'react-native';
-import { FontAwesome5 } from '@expo/vector-icons'; // Asegúrate de importar los iconos que necesitas
+import { FontAwesome5 } from '@expo/vector-icons';
+import { Formik } from 'formik';
+import * as Yup from 'yup';
+
+const ContactSchema = Yup.object().shape({
+  name: Yup.string().required('El nombre es obligatorio').max(100, 'Debe de tener un maximo de 100'),
+  email: Yup.string().email('Email inválido').required('El email es obligatorio').max(100, 'Debe de tener un maximo de 100'),
+  telefono: Yup.string().required('El teléfono es obligatorio').max(10, 'Debe de tener un maximo de 10'),
+  celular: Yup.string().required('El celular es obligatorio').max(10, 'Debe de tener un maximo de 10'),
+  position: Yup.string().required('El cargo es obligatorio').max(100, 'Debe de tener un maximo de 100'),
+});
 
 const CreateClientContactModal = ({ isVisible, onClose, onCreate, clientId }) => {
-  const [contactData, setContactData] = useState({
-    celular: '',
-    clientId: clientId,
-    email: '',
-    name: '',
-    numberDocument: '',
-    position: '',
-  });
+  const keyboardVerticalOffset = Platform.OS === 'ios' ? 40 : 0;
 
-  const handleInputChange = (name, value) => {
-    setContactData({ ...contactData,    clientId: clientId, [name]: value });
-  };
-
-  const handleSubmit = () => {
-    onCreate(contactData);
-  };
-  const keyboardVerticalOffset = Platform.OS === 'ios' ? 40 : 0; 
   return (
-    <Modal visible={isVisible} animationType="slide" transparent={true}>
+    <Modal visible={isVisible} animationType="slide" transparent={true} onRequestClose={onClose}>
       <KeyboardAvoidingView
         style={styles.modalContainer}
         behavior="padding"
-        keyboardVerticalOffset={keyboardVerticalOffset} // Ajusta según sea necesario
+        keyboardVerticalOffset={keyboardVerticalOffset}
       >
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Crear Nuevo Contacto</Text>
@@ -33,82 +28,113 @@ const CreateClientContactModal = ({ isVisible, onClose, onCreate, clientId }) =>
             contentContainerStyle={styles.scrollContainer}
             keyboardShouldPersistTaps="handled"
           >
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Nombre</Text>
-              <View style={styles.inputWrapper}>
-                <FontAwesome5 name="user" size={20} color="black" style={styles.icon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Ingrese el nombre"
-                  value={contactData.name}
-                  onChangeText={(value) => handleInputChange('name', value)}
-                />
-              </View>
-            </View>
-            {/* <View style={styles.inputContainer}>
-              <Text style={styles.label}>Número de Documento</Text>
-              <View style={styles.inputWrapper}>
-                <FontAwesome5 name="id-card" size={20} color="black" style={styles.icon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Ingrese el número de documento"
-                  value={contactData.numberDocument}
-                  onChangeText={(value) => handleInputChange('numberDocument', value)}
-                />
-              </View>
-            </View> */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Email</Text>
-              <View style={styles.inputWrapper}>
-                <FontAwesome5 name="envelope" size={20} color="black" style={styles.icon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Ingrese el email"
-                  value={contactData.email}
-                  onChangeText={(value) => handleInputChange('email', value)}
-                />
-              </View>
-            </View>
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Teléfono</Text>
-              <View style={styles.inputWrapper}>
-                <FontAwesome5 name="phone" size={20} color="black" style={styles.icon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Ingrese el teléfono"
-                  value={contactData.telefono}
-                  onChangeText={(value) => handleInputChange('telefono', value)}
-                />
-              </View>
-            </View>
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Celular</Text>
-              <View style={styles.inputWrapper}>
-                <FontAwesome5 name="mobile-alt" size={20} color="black" style={styles.icon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Ingrese el celular"
-                  value={contactData.celular}
-                  onChangeText={(value) => handleInputChange('celular', value)}
-                />
-              </View>
-            </View>
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Cargo</Text>
-              <View style={styles.inputWrapper}>
-                <FontAwesome5 name="briefcase" size={20} color="black" style={styles.icon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Ingrese la posición"
-                  value={contactData.position}
-                  onChangeText={(value) => handleInputChange('position', value)}
-                />
-              </View>
-            </View>
-            <View style={styles.buttonContainer}>
-              <Button title="Crear Contacto" onPress={handleSubmit} color="#007AFF" />
-              <Button title="Cerrar" onPress={onClose} color="#FF3B30" />
-            </View>
+            <Formik
+              initialValues={{
+                name: '',
+                email: '',
+                telefono: '',
+                celular: '',
+                position: '',
+              }}
+              validationSchema={ContactSchema}
+              onSubmit={(values, { setSubmitting }) => {
+                onCreate({ ...values, clientId });
+                setSubmitting(false);
+                onClose();
+              }}
+            >
+              {({
+                handleChange,
+                handleBlur,
+                handleSubmit,
+                values,
+                errors,
+                touched,
+                isSubmitting,
+              }) => (
+                <>
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.label}>Nombre</Text>
+                    <View style={styles.inputWrapper}>
+                      <FontAwesome5 name="user" size={20} color="black" style={styles.icon} />
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Ingrese el nombre"
+                        value={values.name}
+                        onChangeText={handleChange('name')}
+                        onBlur={handleBlur('name')}
+                      />
+                    </View>
+                    {errors.name && touched.name ? <Text style={styles.errorText}>{errors.name}</Text> : null}
+                  </View>
+
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.label}>Email</Text>
+                    <View style={styles.inputWrapper}>
+                      <FontAwesome5 name="envelope" size={20} color="black" style={styles.icon} />
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Ingrese el email"
+                        value={values.email}
+                        onChangeText={handleChange('email')}
+                        onBlur={handleBlur('email')}
+                      />
+                    </View>
+                    {errors.email && touched.email ? <Text style={styles.errorText}>{errors.email}</Text> : null}
+                  </View>
+
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.label}>Teléfono</Text>
+                    <View style={styles.inputWrapper}>
+                      <FontAwesome5 name="phone" size={20} color="black" style={styles.icon} />
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Ingrese el teléfono"
+                        value={values.telefono}
+                        onChangeText={handleChange('telefono')}
+                        onBlur={handleBlur('telefono')}
+                      />
+                    </View>
+                    {errors.telefono && touched.telefono ? <Text style={styles.errorText}>{errors.telefono}</Text> : null}
+                  </View>
+
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.label}>Celular</Text>
+                    <View style={styles.inputWrapper}>
+                      <FontAwesome5 name="mobile-alt" size={20} color="black" style={styles.icon} />
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Ingrese el celular"
+                        value={values.celular}
+                        onChangeText={handleChange('celular')}
+                        onBlur={handleBlur('celular')}
+                      />
+                    </View>
+                    {errors.celular && touched.celular ? <Text style={styles.errorText}>{errors.celular}</Text> : null}
+                  </View>
+
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.label}>Cargo</Text>
+                    <View style={styles.inputWrapper}>
+                      <FontAwesome5 name="briefcase" size={20} color="black" style={styles.icon} />
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Ingrese la posición"
+                        value={values.position}
+                        onChangeText={handleChange('position')}
+                        onBlur={handleBlur('position')}
+                      />
+                    </View>
+                    {errors.position && touched.position ? <Text style={styles.errorText}>{errors.position}</Text> : null}
+                  </View>
+
+                  <View style={styles.buttonContainer}>
+                    <Button title="Crear Contacto" onPress={handleSubmit} disabled={isSubmitting} color="#007AFF" />
+                    <Button title="Cerrar" onPress={onClose} color="#FF3B30" />
+                  </View>
+                </>
+              )}
+            </Formik>
           </ScrollView>
         </View>
       </KeyboardAvoidingView>
@@ -136,7 +162,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
-    paddingBottom: 40, // Ajuste para espacio adicional al final del ScrollView
+    paddingBottom: 40,
   },
   modalTitle: {
     fontSize: 24,
@@ -173,6 +199,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginTop: 20,
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 10,
   },
 });
 

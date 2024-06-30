@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, TextInput,StyleSheet ,TouchableOpacity, Switch } from 'react-native';
+import { View, Text, Button, TextInput,StyleSheet ,TouchableOpacity, Switch, Alert } from 'react-native';
 import Modal from 'react-native-modal';
 import RNPickerSelect from 'react-native-picker-select';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
@@ -7,12 +7,12 @@ import dayjs from 'dayjs';
 import es from "dayjs/locale/es";
 import Toast from 'react-native-toast-message';
 import { QueryClients } from '../api/client';
-import { CreateVisit, QueryTypeVisit } from '../api/visit';
+import { CreateVisit, QueryLastVisitByClient, QueryTypeVisit } from '../api/visit';
 import { LoadingApp } from "../function/loading";
 
 const CREATE_VISIT_URL = 'http://your-api-url.com/createVisit'; // Reemplaza esta URL por la URL de tu endpoint de creación de visita
 
-export const CreateVisitModal = ({ isVisible, onClose,onRefresh, toggleModal }) => {
+export const CreateVisitModal = ({ isVisible, onClose,onRefresh, toggleModal,navigation }) => {
   const [selectedClientId, setSelectedClientId] = useState('');
   const [selectedTypeId, setSelectedTypeId] = useState('');
   const [description, setDescription] = useState('');
@@ -75,16 +75,40 @@ export const CreateVisitModal = ({ isVisible, onClose,onRefresh, toggleModal }) 
       setLoading(false);
     });
   };
-
+  const lastVisit = (value) =>{
+    if(!Boolean(value)) return
+    Alert.alert("Ver ultima visita", "¿Quieres ver la ultima visita de este cliente?",[
+      {
+        text: "No",
+        style: "cancel",
+      },
+      {
+        text: "Si",
+        onPress: async () => {
+          const response = await QueryLastVisitByClient(value);
+          if(response.length > 0){
+            onClose()
+            navigation.navigate('VisitDetail', {visitId: response[0].id })
+            return
+          }
+          Alert.alert("Error", "Este cliente no tiene visita por primera vez");
+        },
+        isPreferred: true
+      }
+    ])
+  }
   return (
-    <Modal isVisible={isVisible} onBackdropPress={onClose} finally={onRefresh} toggleModal={toggleModal} >
+    <Modal isVisible={isVisible} onBackdropPress={onClose} finally={onRefresh} toggleModal={toggleModal} onRequestClose={onClose}>
     <View style={styles.container}>
       <Text style={styles.header}>Crear una visita</Text>
       {loading ? <LoadingApp></LoadingApp> : <></>}
       <Text style={styles.label}>Cliente:</Text>
       <RNPickerSelect
         items={clients.map(client => ({ label: client.name, value: client.id }))}
-        onValueChange={(value) => setSelectedClientId(value)}
+        onValueChange={(value) => {
+          lastVisit(value)
+          setSelectedClientId(value)
+        }}
         value={selectedClientId}
         style={styles.select}
         darkTheme ={true}
@@ -114,20 +138,21 @@ export const CreateVisitModal = ({ isVisible, onClose,onRefresh, toggleModal }) 
         value={description}
         onChangeText={(text) => setDescription(text)}
         style={styles.input}
-        multiline={false}
+        multiline={true}
         autoCorrect ={true}
         editable= {true}
         numberOfLines={4}
       />
-      <Text style={styles.label}>{visitDate ? dayjs(visitDate).format("dddd D [de] MMMM [del] YYYY") : "No has selecionado el dia"}:</Text>
+      <Text style={styles.label}>{visitDate ? dayjs(visitDate).format("dddd D [de] MMMM [del] YYYY [a las] hh:mm") : "No has selecionado el dia"}:</Text>
       <Button title="Selecione el día" style={styles.buttonText} onPress={() => setDatePickerVisibility(true)} />
       <DateTimePickerModal
         isVisible={isDatePickerVisible}
-        mode="date"
+        mode="datetime"
         onConfirm={(date) => {
           setVisitDate(date);
           setDatePickerVisibility(false);
         }}
+        minimumDate={new Date()}
         onCancel={() => setDatePickerVisibility(false)}
       />
       <TouchableOpacity style={styles.button} onPress={handleCreateVisit}>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons'; // Asegúrate de importar FontAwesome5 desde '@expo/vector-icons'
+import { makePhoneCall } from '../function/notificaction.function';
 
 const ContactCard = ({ contact }) => {
   return (
@@ -9,21 +10,21 @@ const ContactCard = ({ contact }) => {
         <FontAwesome5 name="user" style={styles.icon} />
         <Text style={styles.label}>{contact.name}</Text>
       </View>
-      <View style={styles.row}>
+      {/* <View style={styles.row}>
         <FontAwesome5 name="id-card" style={styles.icon} />
         <Text>{contact.numberDocument}</Text>
-      </View>
+      </View> */}
       <View style={styles.row}>
         <FontAwesome5 name="envelope" style={styles.icon} />
         <Text>{contact.email}</Text>
       </View>
       <View style={styles.row}>
         <FontAwesome5 name="phone-alt" style={styles.icon} />
-        <Text>{contact.telefono}</Text>
+        <Text onPress={()=> {makePhoneCall(contact.telefono)}}>{contact.telefono}</Text>
       </View>
       <View style={styles.row}>
         <FontAwesome5 name="mobile-alt" style={styles.icon} />
-        <Text>{contact.celular}</Text>
+        <Text onPress={()=> {makePhoneCall(contact.telefono)}}>{contact.celular}</Text>
       </View>
       <View style={styles.row}>
         <FontAwesome5 name="briefcase" style={styles.icon} />

@@ -176,36 +176,44 @@ export const fetchCities = async (departmentId) => {
 };
 
 export const createClientContact = async (contactData) => {
-  const token = await AsyncStorage.getItem("userToken");
-  const response = await axios.post(URL_API_GRAPHQL, {
-    query: `
-      mutation CreateClientContact($createInput: CreateClientContactInput!) {
-        createClientContact(createInput: $createInput) {
-          id
-          createdAt
-          updatedAt
-          deletedAt
-          name
-          numberDocument
-          celular
-          email
-          position
-          telefono
-          client {
+  try{
+    const token = await AsyncStorage.getItem("userToken");
+    const response = await axios.post(URL_API_GRAPHQL, {
+      query: `
+        mutation CreateClientContact($createInput: CreateClientContactInput!) {
+          createClientContact(createInput: $createInput) {
             id
+            createdAt
+            updatedAt
+            deletedAt
             name
-            numberDocument
+            celular
+            email
+            position
+            telefono
+            client {
+              id
+              name
+              numberDocument
+            }
           }
         }
+      `,
+      variables: { createInput: contactData },
+    },{
+      headers: {
+        'Authorization': `Bearer ${token}`
       }
-    `,
-    variables: { createInput: contactData },
-  },{
-    headers: {
-      'Authorization': `Bearer ${token}`
+    });
+    if (response.data.errors) {
+      handleGraphQLErrors(response.data.errors)
+      return null
     }
-  });
-  return response.data.data.createClientContact;
+    return response.data.data.createClientContact;
+  }catch(err){
+    handleGraphQLErrors(err)
+    return null
+  }
 };
 
 export const fetchClientDetails = async (clientId) => {
@@ -222,7 +230,6 @@ export const fetchClientDetails = async (clientId) => {
         email
         id
         name
-        numberDocument
         position
         telefono
         updatedAt

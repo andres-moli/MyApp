@@ -162,16 +162,64 @@ export const QueryVisitOne = async (visitId) => {
   }
 };
 
+export const QueryLastVisitByClient = async (clientId) => {
+  const token = await AsyncStorage.getItem("userToken");
 
+  try {
+    const response = await axios.post(URL_API_GRAPHQL, {
+      query: `query Visits($pagination: Pagination, $where: FindVisitWhere, $orderBy: [FindVisitOrderBy!]) {
+  visits(pagination: $pagination, where: $where, orderBy: $orderBy) {
+    id
+    description
+    dateVisit
+  }
+}`,
+      variables: {
+        "pagination": {
+          "skip": 0,
+          "take": 1
+        },
+        "where": {
+          "client": {
+            "_eq": clientId
+          }
+        },
+        "orderBy": [
+          {
+            "dateVisit": "DESC"
+          }
+        ]
+      },
+    },
+    {
+      headers: {
+          'Authorization': `Bearer ${token}`
+      }
+  }
+  );
+
+    if (response.data.errors) {
+      handleGraphQLErrors(response.data.errors)
+      return []
+    }
+
+    return response.data.data.visits;
+  } catch (error) {
+    handleGraphQLErrors(error)
+    return []
+  }
+}
 // Función para obtener las visitas
-export const QueryVisitByUser = async (pagination) => {
+export const QueryVisitByUser = async (data) => {
   const {id} = await JSON.parse(await AsyncStorage.getItem("userData"))
   const token = await AsyncStorage.getItem("userToken");
-  const where = { user: { _eq: id } };
+  const where = { user: { _eq: id }, dateVisit: {
+    _between: data.dateRange
+  } };
   // Define la consulta GraphQL
   const GET_VISITS_QUERY = `
-  query Visits($pagination: Pagination, $where: FindVisitWhere) {
-    visits(pagination: $pagination, where: $where) {
+  query Visits($pagination: Pagination, $where: FindVisitWhere, $orderBy: [FindVisitOrderBy!]) {
+    visits(pagination: $pagination, where: $where, orderBy: $orderBy) {
       id
       createdAt
       updatedAt
@@ -198,7 +246,11 @@ export const QueryVisitByUser = async (pagination) => {
   try {
     const response = await axios.post(URL_API_GRAPHQL, {
       query: GET_VISITS_QUERY,
-      variables: { pagination, where },
+      variables: { pagination: data.pagination, where,  orderBy: [
+        {
+          dateVisit: "DESC"
+        }
+      ] },
     },
     {
       headers: {
@@ -342,6 +394,7 @@ export const QueryVisitComments = async (visitId) => {
             type
             createdAt
             id
+            date
           }
         }
       `,

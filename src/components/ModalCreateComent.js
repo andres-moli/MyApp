@@ -4,11 +4,17 @@ import RNPickerSelect from 'react-native-picker-select';
 import { CreateVisitComment } from '../api/visit';
 import Toast from 'react-native-toast-message';
 import { LoadingApp } from '../function/loading';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import dayjs from 'dayjs';
 
 const CreateCommentModal = ({ visible, visitId, onClose, onRefesh }) => {
   const [type, setType] = useState('');
   const [description, setDescription] = useState('');
+
+  const [date, setDate] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+
   const handleSubmit = async () => {
     try {
       if(description.length > 8000){
@@ -21,7 +27,7 @@ const CreateCommentModal = ({ visible, visitId, onClose, onRefesh }) => {
       }
       setLoading(true);
       let status = type == 'COMMITMENTS' ? 'PENDINIG' : null
-      const response = await CreateVisitComment({type,description,visitId,status})
+      const response = await CreateVisitComment({type,description,visitId,status,date})
       if(response){
         Toast.show({
             type: 'success',
@@ -42,17 +48,25 @@ const CreateCommentModal = ({ visible, visitId, onClose, onRefesh }) => {
 
 
   return (
-    <Modal visible={visible} transparent={true} >
+    <Modal visible={visible} transparent={true} onRequestClose={onClose}>
       <View style={styles.modalContainer}>
       <Text style={styles.modalTitle}>Nuevo Comentario</Text>
         <Text style={styles.label}>Tipo de comentario:</Text>
         <RNPickerSelect
         items={[{label: "Resultado", value: "RESULTS"}, {label: "Compromisos", value: "COMMITMENTS"}]}
-        onValueChange={(value) => setType(value)}
+        onValueChange={(value) => {
+          setType(value)
+          if(value == "COMMITMENTS"){
+            setDatePickerVisibility(true)
+          } else {
+            setDatePickerVisibility(false)
+            setDate(null)
+          }
+        }}
         style={styles.picker}
         value={type}
         darkTheme ={true}
-        placeholder={{ label: "Selecione un tipo de visita", value: null }}
+        placeholder={{ label: "Selecione un tipo de comentario", value: null }}
       />
         <Text style={styles.label}>Descripción del comentario:</Text>
         <TextInput
@@ -61,6 +75,20 @@ const CreateCommentModal = ({ visible, visitId, onClose, onRefesh }) => {
           onChangeText={setDescription}
           multiline
         />
+        {date ? <Text style={styles.label}>{date ? dayjs(date).format("dddd D [de] MMMM [del] YYYY [a las] hh:mm A") : "No has selecionado el dia"}</Text> : <></>}
+        {date ? <Button title="Selecione el día" style={styles.buttonText} onPress={() => setDatePickerVisibility(true)} /> : <></> }
+        <Text/>
+        <DateTimePickerModal
+          isVisible={isDatePickerVisible}
+          mode="datetime"
+          date={date || new Date()}
+          onConfirm={(date) => {
+            setDate(date)
+            setDatePickerVisibility(false);
+          }}
+          onCancel={() => setDatePickerVisibility(false)}
+        />
+        
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
           <Text style={styles.submitButtonText}>Enviar Comentario</Text>
         </TouchableOpacity>

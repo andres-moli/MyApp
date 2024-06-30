@@ -5,6 +5,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { NoVisitsAnimation } from "../function/notVisit";
 import Toast from "react-native-toast-message";
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import dayjs from "dayjs";
 
 const TasksScreen = ({ navigation }) => {
   const [tasks, setTasks] = useState([]);
@@ -13,6 +15,10 @@ const TasksScreen = ({ navigation }) => {
   const [fullDescriptionModalVisible, setFullDescriptionModalVisible] = useState(false);
   const [selectedTaskDescription, setSelectedTaskDescription] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const [startDate, setStartDate] = useState(dayjs().startOf('week').format('YYYY-MM-DD'));
+  const [endDate, setEndDate] = useState(dayjs().endOf('week').format('YYYY-MM-DD'));
+  const [isStartDatePickerVisible, setStartDatePickerVisibility] = useState(false);
+  const [isEndDatePickerVisible, setEndDatePickerVisibility] = useState(false);
 
   const fetchTasks = useCallback(async () => {
     const { id } = await JSON.parse(await AsyncStorage.getItem("userData"));
@@ -27,12 +33,16 @@ const TasksScreen = ({ navigation }) => {
         status: {
           _eq: "pendinig",
         },
+        date: {
+          _gte: startDate,
+          _lte: endDate,
+        },
       },
     };
 
     const fetchedTasks = await QueryTask(variables);
     setTasks(fetchedTasks);
-  }, []);
+  }, [startDate, endDate]);
 
   useEffect(() => {
     fetchTasks();
@@ -49,10 +59,11 @@ const TasksScreen = ({ navigation }) => {
     setSelectedTask(task);
     setModalVisible(true);
   };
-  const showMoreText = (text) =>{
-    setSelectedTaskDescription(text)
+
+  const showMoreText = (text) => {
+    setSelectedTaskDescription(text);
     setFullDescriptionModalVisible(true);
-  }
+  };
 
   // Función para actualizar el estado de la tarea y cerrar el modal
   const handleUpdateStatus = async (status) => {
@@ -81,7 +92,7 @@ const TasksScreen = ({ navigation }) => {
                 type: 'success',
                 text1: '!MUY BIEN!',
                 text2: 'La tarea se actualizo con éxito',
-              })
+              });
               // Filtrar la tarea actualizada del listado
               const updatedTasks = tasks.filter((task) => task.id !== updatedTask.id);
               setTasks(updatedTasks);
@@ -102,21 +113,74 @@ const TasksScreen = ({ navigation }) => {
     navigation.navigate("VisitDetail", { visitId });
   };
 
+  const showStartDatePicker = () => {
+    setStartDatePickerVisibility(true);
+  };
+
+  const hideStartDatePicker = () => {
+    setStartDatePickerVisibility(false);
+  };
+
+  const handleStartConfirm = (date) => {
+    setStartDate(dayjs(date).format('YYYY-MM-DD'));
+    hideStartDatePicker();
+  };
+
+  const showEndDatePicker = () => {
+    setEndDatePickerVisibility(true);
+  };
+
+  const hideEndDatePicker = () => {
+    setEndDatePickerVisibility(false);
+  };
+
+  const handleEndConfirm = (date) => {
+    setEndDate(dayjs(date).format('YYYY-MM-DD'));
+    hideEndDatePicker();
+  };
+
   return (
     <View style={styles.container}>
+      <View style={styles.datePickerContainer}>
+        <View style={styles.datePicker}>
+          <TouchableOpacity onPress={showStartDatePicker}>
+            <Text style={styles.dateText}>Fecha Inicio: {startDate}</Text>
+          </TouchableOpacity>
+          <DateTimePickerModal
+            isVisible={isStartDatePickerVisible}
+            mode="date"
+            onConfirm={handleStartConfirm}
+            onCancel={hideStartDatePicker}
+          />
+        </View>
+        <View style={styles.datePicker}>
+          <TouchableOpacity onPress={showEndDatePicker}>
+            <Text style={styles.dateText}>Fecha Fin: {endDate}</Text>
+          </TouchableOpacity>
+          <DateTimePickerModal
+            isVisible={isEndDatePickerVisible}
+            mode="date"
+            onConfirm={handleEndConfirm}
+            onCancel={hideEndDatePicker}
+          />
+        </View>
+        <TouchableOpacity style={styles.filterButton} onPress={fetchTasks}>
+          <Text style={styles.filterButtonText}>Filtrar</Text>
+        </TouchableOpacity>
+      </View>
       <ScrollView
         contentContainerStyle={styles.taskList}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
         {tasks.length === 0 ? (
-          <NoVisitsAnimation text="No hay tareas pendientes"></NoVisitsAnimation>
+          <NoVisitsAnimation text="No hay tareas pendientes" />
         ) : (
           tasks.map((task) => (
             <TouchableOpacity key={task.id} style={styles.taskCard} onPress={() => handleTaskPress(task)}>
               <View style={styles.taskCardContent}>
                 <Text style={styles.taskDescription} numberOfLines={2} ellipsizeMode="tail">{task.description}</Text>
                 <Text onPress={() => showMoreText(task.description)} style={{color: "blue"}}>Leer mas</Text>
-                <Text style={styles.taskDate}>{task.createdAt?.split("T")[0]}</Text>
+                <Text style={styles.taskDate}>Fecha de vencimiento: {dayjs(task.date).format("YYYY-MM-DD HH:mm")}</Text>
               </View>
               <Ionicons name="checkmark-circle-outline" size={52} color="black" style={styles.taskIcon} />
             </TouchableOpacity>
@@ -213,6 +277,7 @@ const styles = StyleSheet.create({
   taskDate: {
     fontSize: 12,
     color: "gray",
+    fontWeight: 'bold',
   },
   taskIcon: {
     marginLeft: 10,
@@ -274,6 +339,41 @@ const styles = StyleSheet.create({
     top: 10,
     right: 10,
     padding: 10,
+  },
+  datePickerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  datePicker: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  dateText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  filterButton: {
+    backgroundColor: '#000',
+    borderRadius: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  filterButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 

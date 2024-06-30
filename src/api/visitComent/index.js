@@ -13,6 +13,7 @@ export const QueryTask = async (variables) => {
             id
           }
           id
+          date
         }
       }
     `;

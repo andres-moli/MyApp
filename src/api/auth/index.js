@@ -35,6 +35,7 @@ export async function QuerySignIn(email, password) {
     return { token, user };
   } catch (err) {
     handleGraphQLErrors(err)
+    alert(err.message)
     return null
   }
 }

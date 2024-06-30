@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Modal, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Modal } from 'react-native';
 import Collapsible from 'react-native-collapsible';
 import { Ionicons } from '@expo/vector-icons';
 import ShowVisitDetailScreen from '../components/ShowVisitDetail';
 import CreateCommentModal from '../components/ModalCreateComent';
 import { QueryVisitComments } from '../api/visit';
-import MapScreen from '../components/Map';
 import { NoVisitsAnimation } from '../function/notVisit';
-import MapComponent from '../components/Map';
+import { FontAwesome5 } from '@expo/vector-icons';
+import dayjs from 'dayjs';
 
 const VisitDetailScreen = ({ route, navigation }) => {
   const { visitId } = route.params;
@@ -17,26 +17,29 @@ const VisitDetailScreen = ({ route, navigation }) => {
   const [comments, setComments] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalVisibleCreatComent, setModalVisibleCreatComent] = useState(false);
-
   const [modalContent, setModalContent] = useState('');
+
   const toggleModal = () => {
     setModalVisibleCreatComent(!modalVisibleCreatComent);
   };
+
   const toggleModalClose = () => {
-    setIsCollapsedDetails(true)
-    setIsCollapsedObservations(true)
-    setIsCollapsedComments(true)
+    setIsCollapsedDetails(true);
+    setIsCollapsedObservations(true);
+    setIsCollapsedComments(true);
     setModalVisibleCreatComent(false);
   };
+
   const onRefeshComent = () => {
     QueryVisitComments(visitId).then((e) => {
-      setComments(e)
-    })
-  }
+      setComments(e);
+    });
+  };
+
   useEffect(() => {
     QueryVisitComments(visitId).then((e) => {
-      setComments(e)
-    })
+      setComments(e);
+    });
   }, [visitId]);
 
   const renderCommentCard = ({ item }) => (
@@ -44,7 +47,8 @@ const VisitDetailScreen = ({ route, navigation }) => {
       <View style={styles.commentContent}>
         <Text style={styles.commentAuthor}>{item.user.name}</Text>
         <Text style={styles.commentDescription} numberOfLines={2} ellipsizeMode="tail">{item.description}</Text>
-        <Text style={styles.commentDate}>{item.createdAt.split("T")[0]}</Text>
+        {item.type == "COMMITMENTS" ? <Text style={styles.commentDate}>Fecha vencimiento: {dayjs(item.date).format("YYYY-MM-DD HH:mm")}</Text> : <></> }
+        <Text style={styles.commentDate}>Fecha de creacion: {dayjs(item.createdAt).format("YYYY-MM-DD HH:mm")}</Text>
       </View>
       <TouchableOpacity style={styles.readMoreButton} onPress={() => {
         setModalContent(item.description);
@@ -55,20 +59,22 @@ const VisitDetailScreen = ({ route, navigation }) => {
     </View>
   );
 
-  return (
-    <ScrollView style={styles.container}>
+  const listHeaderComponent = () => (
+    <View>
       <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-        {/* <Ionicons name="arrow-back" size={24} color="black" /> */}
+        <Ionicons name="arrow-back" size={24} color="black" />
       </TouchableOpacity>
+
       <TouchableOpacity onPress={() => setIsCollapsedDetails(!isCollapsedDetails)}>
         <View style={styles.header}>
           <Text style={styles.headerText}>Detalle de la visita</Text>
-          <Ionicons name={isCollapsedObservations ? 'chevron-down' : 'chevron-up'} size={24} color="black" />
+          <Ionicons name={isCollapsedDetails ? 'chevron-down' : 'chevron-up'} size={24} color="black" />
         </View>
-        <Collapsible collapsed={isCollapsedDetails}>
-            <ShowVisitDetailScreen visitId={visitId}></ShowVisitDetailScreen>
-        </Collapsible>
       </TouchableOpacity>
+      <Collapsible collapsed={isCollapsedDetails}>
+        <ShowVisitDetailScreen visitId={visitId} />
+      </Collapsible>
+
       <TouchableOpacity onPress={() => setIsCollapsedObservations(!isCollapsedObservations)}>
         <View style={styles.header}>
           <Text style={styles.headerText}>Resultados</Text>
@@ -76,18 +82,19 @@ const VisitDetailScreen = ({ route, navigation }) => {
         </View>
       </TouchableOpacity>
       <Collapsible collapsed={isCollapsedObservations}>
-      {
-        comments.filter(comment => comment.type === 'RESULTS').length > 0
-        ? <>
-        <View style={styles.content}>
-          <FlatList
-            data={comments.filter(comment => comment.type === 'RESULTS')}
-            renderItem={renderCommentCard}
-            keyExtractor={item => item.id.toString()}
-          />
-        </View>
-        </> : <NoVisitsAnimation text='No se tienes comentarios de resultados'></NoVisitsAnimation> 
-      }
+        {
+          comments.filter(comment => comment.type === 'RESULTS').length > 0
+            ? <View style={styles.content}>
+                <FlatList
+                  data={comments.filter(comment => comment.type === 'RESULTS')}
+                  renderItem={renderCommentCard}
+                  keyExtractor={item => item.id.toString()}
+                  key={item => item.id.toString()}
+                  scrollEnabled={false}
+                />
+              </View>
+            : <NoVisitsAnimation text='No se tienen comentarios de resultados' />
+        }
       </Collapsible>
 
       <TouchableOpacity onPress={() => setIsCollapsedComments(!isCollapsedComments)}>
@@ -97,41 +104,52 @@ const VisitDetailScreen = ({ route, navigation }) => {
         </View>
       </TouchableOpacity>
       <Collapsible collapsed={isCollapsedComments}>
-      {
-        comments.filter(comment => comment.type === 'COMMITMENTS').length > 0
-        ? <>
-          <View style={styles.content}>
-          <FlatList
-            data={comments.filter(comment => comment.type === 'COMMITMENTS')}
-            renderItem={renderCommentCard}
-            keyExtractor={item => item.id.toString()}
-          />
-        </View>
-        </> : <NoVisitsAnimation text='No se tienes comentarios de compromisos'></NoVisitsAnimation> 
-      }
+        {
+          comments.filter(comment => comment.type === 'COMMITMENTS').length > 0
+            ? <View style={styles.content}>
+                <FlatList
+                  data={comments.filter(comment => comment.type === 'COMMITMENTS')}
+                  renderItem={renderCommentCard}
+                  keyExtractor={item => item.id.toString()}
+                  key={item => item.id.toString()}
+                  scrollEnabled={false}
+                />
+              </View>
+            : <NoVisitsAnimation text='No se tienen comentarios de compromisos' />
+        }
       </Collapsible>
-      
+    </View>
+  );
 
-      <Modal
-        visible={modalVisible}
-        animationType="slide"
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContent}>
-          <Text>{modalContent}</Text>
-          <TouchableOpacity onPress={() => setModalVisible(false)}>
-            <Text style={styles.closeModal}>Cerrar</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
-      <CreateCommentModal visible={modalVisibleCreatComent} onClose={toggleModalClose} visitId={visitId} onRefesh={onRefeshComent} /> 
-      <TouchableOpacity 
-        style={styles.buttomFloanting} 
-        onPress={toggleModal}
-      >
-        <Text style={{ color: "white" }}>+</Text> 
-    </TouchableOpacity> 
-    </ScrollView>
+  return (
+    <>
+    <FlatList
+      data={[]}
+      ListHeaderComponent={listHeaderComponent}
+      keyExtractor={(item, index) => index.toString()}
+      renderItem={() => null}
+      ListFooterComponent={
+        <>
+          <Modal
+            visible={modalVisible}
+            animationType="slide"
+            onRequestClose={() => setModalVisible(false)}
+          >
+            <View style={styles.modalContent}>
+              <Text>{modalContent}</Text>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Text style={styles.closeModal}>Cerrar</Text>
+              </TouchableOpacity>
+            </View>
+          </Modal>
+          <CreateCommentModal visible={modalVisibleCreatComent} onClose={toggleModalClose} visitId={visitId} onRefesh={onRefeshComent} />
+        </>
+      }
+    />
+      <TouchableOpacity style={styles.addButton} onPress={toggleModal}>
+          <FontAwesome5 name="plus" size={24} color="white" />
+      </TouchableOpacity>
+    </>
   );
 };
 
@@ -140,6 +158,7 @@ const styles = StyleSheet.create({
     flex: 2,
   },
   backButton: {
+    marginVertical: 20,
     padding: 20,
   },
   header: {
@@ -208,6 +227,7 @@ const styles = StyleSheet.create({
   commentDate: {
     fontSize: 12,
     color: '#999',
+    fontWeight: 'bold',
   },
   readMoreButton: {
     marginLeft: 10,
@@ -226,13 +246,26 @@ const styles = StyleSheet.create({
     color: 'blue',
   },
   buttomFloanting: {
+    borderWidth: 1,
+    borderColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 70,
+    position: 'relative',
+    top: 210,
+    right: 20,
+    height: 70,
+    backgroundColor: 'black',
+    borderRadius: 100,
+    textAlignVertical: "auto"
+  },
+  addButton: {
     borderWidth: 1, 
-    borderColor: '#fff', 
     alignItems: 'center', 
     justifyContent: 'center', 
     width: 70, 
     position: 'absolute', 
-    top: 720, 
+    top: 590, 
     right: 20, 
     height: 70, 
     backgroundColor: 'black', 

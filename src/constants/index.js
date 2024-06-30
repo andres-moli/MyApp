@@ -1,1 +1,1 @@
-export const URL_API_GRAPHQL = 'http://201.221.184.224:3002/graphql'
+export const URL_API_GRAPHQL = 'https://intranet.cytech.net.co:3002/graphql'

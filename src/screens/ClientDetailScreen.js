@@ -6,6 +6,8 @@ import CreateClientContactModal from '../components/CreateClientContactModal'; /
 import DetailClientCard from '../components/ClientDetialCard'; // Ajusta el nombre del componente si es necesario
 import ContactCard from '../components/ContactCard';
 import { LoadingApp } from '../function/loading';
+import { NoVisitsAnimation } from '../function/notVisit';
+import Toast from 'react-native-toast-message';
 
 const ClientDetailScreen = ({ route }) => {
   const { clientId } = route.params;
@@ -34,9 +36,16 @@ const ClientDetailScreen = ({ route }) => {
   };
 
   const handleCreateContact = async (contactData) => {
-    await createClientContact(contactData);
-    setModalVisible(false);
-    loadClientDetails();
+    const response = await createClientContact(contactData);
+    if(response){
+      setModalVisible(false);
+      loadClientDetails();
+      Toast.show({
+        type: 'success',
+        text1: '!MUY BIEN!',
+        text2: 'Contacto creado con éxito',
+      })
+    }
   };
 
   return (
@@ -48,13 +57,19 @@ const ClientDetailScreen = ({ route }) => {
         <DetailClientCard detail={client}></DetailClientCard>
       )}
       <Text style={styles.sectionTitle}>CONTACTOS DEL CLIENTE</Text>
-      <FlatList
+      {
+       contacts?.length > 0 ?
+       <>
+             <FlatList
         data={contacts}
         renderItem={renderContact}
         keyExtractor={(item) => item.id}
         style={styles.contactList}
         key={(item) => item.id}
       />
+       </> 
+       : <NoVisitsAnimation text='No tiene contacto el cliente'></NoVisitsAnimation>
+      }
       <TouchableOpacity style={styles.addButton} onPress={openCreateContactModal}>
         <FontAwesome5 name="plus" size={24} color="white" />
       </TouchableOpacity>
@@ -96,12 +111,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   addButton: {
-    position: 'absolute',
-    right: 20,
-    bottom: 20,
-    backgroundColor: 'black',
-    borderRadius: 50,
-    padding: 15,
+    borderWidth: 1, 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    width: 70, 
+    position: 'absolute', 
+    top: 590, 
+    right: 20, 
+    height: 70, 
+    backgroundColor: 'black', 
+    borderRadius: 100,
+    textAlignVertical: "auto"
   },
 });
 

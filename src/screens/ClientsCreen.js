@@ -106,12 +106,17 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   addButton: {
-    position: 'absolute',
-    right: 20,
-    bottom: 80,
-    backgroundColor: 'black',
-    borderRadius: 50,
-    padding: 20,
+    borderWidth: 1, 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    width: 70, 
+    position: 'absolute', 
+    top: 590, 
+    right: 20, 
+    height: 70, 
+    backgroundColor: 'black', 
+    borderRadius: 100,
+    textAlignVertical: "auto"
   },
 });
 

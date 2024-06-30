@@ -134,7 +134,7 @@ export const ShowVisitDetailScreen = ({visitId }) => {
             <View style={stylesModal.divider} />
             <View style={stylesModal.labelContainer}>
                 <Text style={stylesModal.label}><Icon name="calendar" size={20} color="#333" /> Fecha de la visita</Text>
-                <Text style={stylesModal.value}>{visit?.dateVisit.split('T')[0]}</Text>
+                <Text style={stylesModal.value}>{dayjs(visit?.dateVisit).format("YYYY-MM-DD HH:mm:ss")}</Text>
             </View>
             <View style={stylesModal.divider} />
             <View style={stylesModal.labelContainer}>
@@ -151,7 +151,6 @@ export const ShowVisitDetailScreen = ({visitId }) => {
                 </View>
             </View>
             <>
-            <MapComponent latitude={37.78825} longitude={-122.4324}></MapComponent>
             </>
             {(visit?.status == 'confirmed' || visit?.status == 'reprogrammed') && (
                 <>

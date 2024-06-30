@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons'; // Importa los iconos que necesites
+import { sendEmail } from '../function/notificaction.function';
 
 const DetailClientCard = ({ detail }) => {
   return (
@@ -23,7 +24,7 @@ const DetailClientCard = ({ detail }) => {
       <View style={styles.section}>
         <Icon name="mail" size={24} color="#666" style={styles.icon} />
         <Text style={styles.label}>Email</Text>
-        <Text style={styles.value}>{detail.email}</Text>
+        <Text style={styles.value} onPress={()=>sendEmail(detail.email)}>{detail.email}</Text>
       </View>
       <View style={styles.section}>
         <Icon name="call" size={24} color="#666" style={styles.icon} />
