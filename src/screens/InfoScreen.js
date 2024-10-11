@@ -51,11 +51,11 @@ const InfoScreen = ({ navigation }) => {
             <Text style={styles.label}>Número de Identificación:</Text>
             <Text style={styles.value}>{user.identificationNumber}</Text>
           </View>
-          <View style={styles.card}>
+          {/* <View style={styles.card}>
             <FontAwesome5 name="black-tie" size={20} color="black" style={styles.icon} />
             <Text style={styles.label}>Cargo:</Text>
             <Text style={styles.value}>{user.position}</Text>
-          </View>
+          </View> */}
           <View style={styles.card}>
             <FontAwesome5 name="envelope" size={20} color="black" style={styles.icon} />
             <Text style={styles.label}>Email:</Text>
@@ -64,7 +64,7 @@ const InfoScreen = ({ navigation }) => {
           <View style={styles.card}>
             <FontAwesome5 name="phone" size={20} color="black" style={styles.icon} />
             <Text style={styles.label}>Celular:</Text>
-            <Text style={styles.value}>{user.celular}</Text>
+            <Text style={styles.value}>{user.phoneNumber}</Text>
           </View>
           <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
             <Text style={styles.logoutText}>Cerrar Sesión</Text>

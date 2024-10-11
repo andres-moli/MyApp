@@ -4989,7 +4989,7 @@ lodash.throttle@^4.1.1:
   resolved "https://registry.npmjs.org/lodash.throttle/-/lodash.throttle-4.1.1.tgz"
   integrity sha512-wIkUCfVKpVsWo3JSZlc+8MB5it+2AN5W8J7YVMST30UrvcQNZ1Okbj+rbVniijTWE6FGYy4XJq/rHkas8qJMLQ==
 
-lodash@^4.17.13, lodash@^4.17.21:
+lodash@*, lodash@^4.17.13, lodash@^4.17.21:
   version "4.17.21"
   resolved "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz"
   integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
@@ -5980,7 +5980,7 @@ prompts@^2.3.2, prompts@^2.4.2:
     kleur "^3.0.3"
     sisteransi "^1.0.5"
 
-prop-types@^15.6.2, prop-types@^15.7.2, prop-types@^15.8.1:
+prop-types@^15.5.10, prop-types@^15.6.2, prop-types@^15.7.2, prop-types@^15.8.1:
   version "15.8.1"
   resolved "https://registry.npmjs.org/prop-types/-/prop-types-15.8.1.tgz"
   integrity sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==
@@ -6160,6 +6160,13 @@ react-native-modal-datetime-picker@^17.1.0:
   dependencies:
     prop-types "^15.7.2"
 
+react-native-modal-selector@^2.1.2:
+  version "2.1.2"
+  resolved "https://registry.npmjs.org/react-native-modal-selector/-/react-native-modal-selector-2.1.2.tgz"
+  integrity sha512-+Cvoz/yNUFmfIkJ7xkmlLR2nhJOUhx00S6BPqp2Ruy8LkmaiNr7WMZ4BzsgzylyEgZ84Q+42HQ0v0QzJYobviA==
+  dependencies:
+    prop-types "^15.5.10"
+
 react-native-modal@^13.0.1:
   version "13.0.1"
   resolved "https://registry.npmjs.org/react-native-modal/-/react-native-modal-13.0.1.tgz"
@@ -6202,6 +6209,13 @@ react-native-safe-area-context@*, "react-native-safe-area-context@>= 3.0.0", rea
   dependencies:
     react-freeze "^1.0.0"
     warn-once "^0.1.0"
+
+react-native-searchable-dropdown-kj@^1.9.3:
+  version "1.9.3"
+  resolved "https://registry.npmjs.org/react-native-searchable-dropdown-kj/-/react-native-searchable-dropdown-kj-1.9.3.tgz"
+  integrity sha512-vQhJAk5hIPxx8NJ5hNlDUaVXnPu9T8sxNVzvIU+ry8TMBmHxgo+ci4Q/DZHZVxnftfOA23D14IcSinGXuHCTTA==
+  dependencies:
+    lodash "*"
 
 react-native-size-scaling@^0.5.1:
   version "0.5.1"

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, View, Text, TextInput, Button, TouchableOpacity, StyleSheet } from 'react-native';
+import { Modal, View, Text, TextInput, Button, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import { CreateVisitComment } from '../api/visit';
 import Toast from 'react-native-toast-message';
@@ -18,12 +18,18 @@ const CreateCommentModal = ({ visible, visitId, onClose, onRefesh }) => {
   const handleSubmit = async () => {
     try {
       if(description.length > 8000){
-        Toast.show({
-          type: 'info',
-          text1: '!MUY MAL!',
-          text2: 'La descripcion supera los 8000 caracteres',
-        });
+        Alert.alert('La descripcion supera los 8000 caracteres')
         return
+      }
+      if(description.length == 0){
+        Alert.alert('La descripcion es obligatoria')
+        return
+      }
+      if(type == 'COMMITMENTS'){
+        if(!date){
+          Alert.alert('Debes selecionar una fecha de vencimiento')
+          return
+        }
       }
       setLoading(true);
       let status = type == 'COMMITMENTS' ? 'PENDINIG' : null
@@ -86,6 +92,7 @@ const CreateCommentModal = ({ visible, visitId, onClose, onRefesh }) => {
             setDate(date)
             setDatePickerVisibility(false);
           }}
+          minimumDate={new Date()}
           onCancel={() => setDatePickerVisibility(false)}
         />
         

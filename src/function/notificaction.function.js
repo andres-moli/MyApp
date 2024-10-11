@@ -22,7 +22,7 @@ export const sendEmail = (emailAddress) => {
     Linking.openURL(url)
       .then((supported) => {
         if (!supported) {
-          Alert.alert('Error', 'Email not supported');
+          // Alert.alert('Error', 'Email not supported');
         } else {
           return Linking.openURL(url);
         }

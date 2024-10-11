@@ -40,7 +40,6 @@ const HomeScreen = ({ navigation, }) => {
     const data = await QueryVisitDashboardData();
     setdataUser(JSON.parse(await AsyncStorage.getItem("userData")));
     if (data) {
-      console.log(data)
       setVisitDashboardData(data);
     }
   }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, FlatList, TouchableOpacity, StyleSheet, ScrollView,RefreshControl } from 'react-native';
+import { View, FlatList, TouchableOpacity, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { fetchClients, createClient } from '../api/client';
 import { FontAwesome5 } from '@expo/vector-icons';
 import CreateClientModal from '../components/CreateClientModal';
@@ -27,15 +27,17 @@ const ClientsScreen = ({ navigation }) => {
     setLoading(false);
     setHasMore(newClients.length === pagination.take); // Check if there are more clients to load
   };
+
   const onRefresh = async () => {
-    setPagination({
-      skip: 0,
-      take: 10
-    })
     setRefreshing(true);
-    await loadMoreClients();
+    const newPagination = { skip: 0, take: 10 };
+    const newClients = await fetchClients(newPagination);
+    setClients(newClients);
+    setPagination(newPagination);
+    setHasMore(newClients.length === newPagination.take);
     setRefreshing(false);
   };
+
   const loadMoreClients = async () => {
     if (!loadingMore && hasMore) {
       setLoadingMore(true);
@@ -61,11 +63,10 @@ const ClientsScreen = ({ navigation }) => {
 
   const handleCreateClient = async (clientData) => {
     const response = await createClient(clientData);
-    if(!response){
+    if (!response) {
       setModalVisible(false);
-      return
+      return;
     }
-
     setClients([]);
     setPagination({ skip: 0, take: 10 });
     loadClients();
@@ -78,15 +79,18 @@ const ClientsScreen = ({ navigation }) => {
           contentContainerStyle={styles.noDataContainer}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
-          <NoVisitsAnimation text="No tienes clientes asociados"></NoVisitsAnimation>
+          <NoVisitsAnimation text="No tienes clientes asociados" />
         </ScrollView>
-      ) :  <FlatList
-      data={clients}
-      renderItem={renderClient}
-      keyExtractor={(item) => item.id}
-      onEndReached={loadMoreClients}
-      onEndReachedThreshold={0.5}
-    />}
+      ) : (
+        <FlatList
+          data={clients}
+          renderItem={renderClient}
+          keyExtractor={(item) => item.id}
+          onEndReached={loadMoreClients}
+          onEndReachedThreshold={0.5}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        />
+      )}
       <TouchableOpacity style={styles.addButton} onPress={openCreateClientModal}>
         <FontAwesome5 name="plus" size={24} color="white" />
       </TouchableOpacity>
@@ -117,6 +121,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'black', 
     borderRadius: 100,
     textAlignVertical: "auto"
+  },
+  noDataContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

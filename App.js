@@ -15,6 +15,8 @@ import ClientsScreen from "./src/screens/ClientsCreen";
 import ClientDetailScreen from "./src/screens/ClientDetailScreen";
 import TasksScreen from "./src/screens/TasksScreen";
 import { CurvedBottomBarExpo } from 'react-native-curved-bottom-bar';
+import { VerifyTokenQuery } from "./src/api/auth";
+import { LoadingApp } from "./src/function/loading";
   const Stack = createNativeStackNavigator();
   const Tab = createBottomTabNavigator();
 
@@ -24,7 +26,15 @@ import { CurvedBottomBarExpo } from 'react-native-curved-bottom-bar';
     useEffect(() => {
       const checkToken = async () => {
         const token = await AsyncStorage.getItem("userToken");
-        setInitialRoute(Boolean(token) ? "MainTabs" : "Login");
+        //const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjUzZjQ5M2YyLWRiNGItNDU2Yi1iMDlhLWFjNzFjN2FhOWI1ZiIsImhhc0F1dGhvcml6ZWQiOnRydWUsImlhdCI6MTcxOTY4NDYxNCwiZXhwIjoxNzE5NzcxMDE0fQ.p-Rf2PerCju01Msm6pngAE5sPollDp4vGs2fxH8ol9s"
+        const verifyToken = await VerifyTokenQuery(token);
+        if(verifyToken){
+          await AsyncStorage.setItem('userData', JSON.stringify(verifyToken));
+          setInitialRoute( "MainTabs");
+          return
+        }
+        setInitialRoute("Login")
+        return
         // setIsLoggedIn(!!token); // Se establece en verdadero si existe un token, de lo contrario, en falso
       };
       checkToken();
@@ -34,7 +44,8 @@ import { CurvedBottomBarExpo } from 'react-native-curved-bottom-bar';
       // CAMBIA ESTO POR ALGO MEJOR, ESTO ES MIENTRAS SE CARGA LA "SESION" ANTERIOR DEL USUARIO
       return (
         <View style={{ alignItems: "center", justifyContent: "center", flex: 1 }}>
-          <Text>Splash</Text>
+          <LoadingApp></LoadingApp>
+          <Text>Cargando app...</Text>
         </View>
       );
 
@@ -45,7 +56,7 @@ import { CurvedBottomBarExpo } from 'react-native-curved-bottom-bar';
       >
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="VisitDetail" component={VisitDetailScreen} options={{ title: "Detalle de la Visita" }} />
-        <Stack.Screen name="ClientDetail" component={ClientDetailScreen} options={{ title: 'Detalle del Cliente' }} />
+        <Stack.Screen name="ClientDetail" component={ClientDetailScreen} options={{ title: 'Detalle del Cliente', headerShown: true, headerBackTitle: "Volver" }} />
         <Stack.Screen name="MainTabs" component={MainTabs} />
       </Stack.Navigator>
     );

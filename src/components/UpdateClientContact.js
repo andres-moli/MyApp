@@ -12,7 +12,7 @@ const ContactSchema = Yup.object().shape({
   position: Yup.string().required('El cargo es obligatorio').max(100, 'Debe de tener un maximo de 100'),
 });
 
-const CreateClientContactModal = ({ isVisible, onClose, onCreate, clientId }) => {
+const UpdateClientContactModal = ({ isVisible, onClose, onUpdate, contact }) => {
   const keyboardVerticalOffset = Platform.OS === 'ios' ? 40 : 0;
 
   return (
@@ -23,22 +23,22 @@ const CreateClientContactModal = ({ isVisible, onClose, onCreate, clientId }) =>
         keyboardVerticalOffset={keyboardVerticalOffset}
       >
         <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Crear Nuevo Contacto</Text>
+          <Text style={styles.modalTitle}>Actualizar Contacto</Text>
           <ScrollView
             contentContainerStyle={styles.scrollContainer}
             keyboardShouldPersistTaps="handled"
           >
             <Formik
               initialValues={{
-                name: '',
-                email: '',
-                telefono: '',
-                celular: '',
-                position: '',
+                name: contact?.name,
+                email: contact?.email,
+                telefono: contact?.telefono,
+                celular: contact?.celular,
+                position: contact?.position,
               }}
               validationSchema={ContactSchema}
               onSubmit={(values, { setSubmitting }) => {
-                onCreate({ ...values, clientId });
+                onUpdate({ ...values, id: contact.id });
                 setSubmitting(false);
                 onClose();
               }}
@@ -79,7 +79,6 @@ const CreateClientContactModal = ({ isVisible, onClose, onCreate, clientId }) =>
                         onChangeText={handleChange('email')}
                         onBlur={handleBlur('email')}
                         keyboardType="email-address"
-
                       />
                     </View>
                     {errors.email && touched.email ? <Text style={styles.errorText}>{errors.email}</Text> : null}
@@ -123,7 +122,7 @@ const CreateClientContactModal = ({ isVisible, onClose, onCreate, clientId }) =>
                       <FontAwesome5 name="briefcase" size={20} color="black" style={styles.icon} />
                       <TextInput
                         style={styles.input}
-                        placeholder="Ingrese la posición"
+                        placeholder="Ingrese el cargo"
                         value={values.position}
                         onChangeText={handleChange('position')}
                         onBlur={handleBlur('position')}
@@ -133,7 +132,7 @@ const CreateClientContactModal = ({ isVisible, onClose, onCreate, clientId }) =>
                   </View>
 
                   <View style={styles.buttonContainer}>
-                    <Button title="Crear Contacto" onPress={handleSubmit} disabled={isSubmitting} color="#007AFF" />
+                    <Button title="Actualizar Contacto" onPress={handleSubmit} disabled={isSubmitting} color="#007AFF" />
                     <Button title="Cerrar" onPress={onClose} color="#FF3B30" />
                   </View>
                 </>
@@ -210,4 +209,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CreateClientContactModal;
+export default UpdateClientContactModal;

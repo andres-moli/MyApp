@@ -9,7 +9,8 @@ import Toast from 'react-native-toast-message';
 import { QueryClients } from '../api/client';
 import { CreateVisit, QueryLastVisitByClient, QueryTypeVisit } from '../api/visit';
 import { LoadingApp } from "../function/loading";
-
+// import SelectDropdown from 'react-native-select-dropdown';
+import DropdownComponent from './SearchableSelect';
 const CREATE_VISIT_URL = 'http://your-api-url.com/createVisit'; // Reemplaza esta URL por la URL de tu endpoint de creación de visita
 
 export const CreateVisitModal = ({ isVisible, onClose,onRefresh, toggleModal,navigation }) => {
@@ -38,14 +39,15 @@ export const CreateVisitModal = ({ isVisible, onClose,onRefresh, toggleModal,nav
             setTypes(response)
         })
         // Llamar al servicio para obtener los tipos
-    }, []);
+    }, [onRefresh]);
   const toggleSwitch = () => setIsProject(previousState => !previousState);
   const handleCreateVisit = () => {
+    console.log(selectedClientId)
     setLoading(true);
     // Realizar la llamada a la API para crear la visita
     CreateVisit({
-      clientId: selectedClientId,
-      typeId: selectedTypeId,
+      clientId: selectedClientId?.value,
+      typeId: selectedTypeId?.value,
       dateVisit:visitDate,
       description,
       isProyect,
@@ -103,7 +105,18 @@ export const CreateVisitModal = ({ isVisible, onClose,onRefresh, toggleModal,nav
       <Text style={styles.header}>Crear una visita</Text>
       {loading ? <LoadingApp></LoadingApp> : <></>}
       <Text style={styles.label}>Cliente:</Text>
-      <RNPickerSelect
+      <DropdownComponent 
+      data={clients.map(client => ({ label: client.name, value: client.id }))}
+      placeholder={'Seleccione un cliente'}
+      onChange={
+        (value) => {
+          lastVisit(value)
+          setSelectedClientId(value)
+        }
+      }
+      ></DropdownComponent>
+
+      {/* <RNPickerSelect
         items={clients.map(client => ({ label: client.name, value: client.id }))}
         onValueChange={(value) => {
           lastVisit(value)
@@ -114,9 +127,16 @@ export const CreateVisitModal = ({ isVisible, onClose,onRefresh, toggleModal,nav
         darkTheme ={true}
         styles={pickerSelectStyles.inputAndroid}
         placeholder={{ label: "Selecione un cliente", value: null }}
-      />
+      /> */}
       <Text style={styles.label}>Tipo de visita:</Text>
-      <RNPickerSelect
+      <DropdownComponent 
+      data={types.map(type => ({ label: type.name, value: type.id }))}
+      placeholder={'Selecione un tipo de visita'}
+      onChange={
+        (value) => setSelectedTypeId(value)
+      }
+      ></DropdownComponent>
+      {/* <RNPickerSelect
         items={types.map(type => ({ label: type.name, value: type.id }))}
         onValueChange={(value) => setSelectedTypeId(value)}
         value={selectedTypeId}
@@ -124,7 +144,7 @@ export const CreateVisitModal = ({ isVisible, onClose,onRefresh, toggleModal,nav
         styles={pickerSelectStyles.inputAndroid}
         darkTheme ={true}
         placeholder={{ label: "Selecione un tipo de visita", value: null }}
-      />
+      /> */}
       <Text style={styles.label}>{"¿Tiene proyecto? (NO / SI)"}</Text>
       <Switch
         trackColor={{ false: '#767577', true: '#0ac729' }}

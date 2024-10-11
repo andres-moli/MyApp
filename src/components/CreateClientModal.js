@@ -5,6 +5,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { fetchDepartments, fetchCities, createClient } from '../api/client';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
+import { TIPOS_VERTICALES } from '../constants';
 
 const ClientSchema = Yup.object().shape({
   email: Yup.string().email('Email inválido').required('El email es obligatorio'),
@@ -18,7 +19,7 @@ const ClientSchema = Yup.object().shape({
   departmentId: Yup.string().required('El departamento es obligatorio'),
   cityId: Yup.string().required('La ciudad es obligatoria'),
   address: Yup.string().required('La dirección es obligatoria'),
-  vertical: Yup.string().required('La vertical es obligatoria'),
+  vertical: Yup.string().optional(),
 });
 
 const CreateClientModal = ({ isVisible, onClose, onCreate }) => {
@@ -122,6 +123,7 @@ const CreateClientModal = ({ isVisible, onClose, onCreate }) => {
                       value={values.telefono}
                       onChangeText={handleChange('telefono')}
                       onBlur={handleBlur('telefono')}
+                      keyboardType="phone-pad"
                     />
                   </View>
                   {errors.telefono && touched.telefono ? <Text style={styles.errorText}>{errors.telefono}</Text> : null}
@@ -137,6 +139,7 @@ const CreateClientModal = ({ isVisible, onClose, onCreate }) => {
                       value={values.celular}
                       onChangeText={handleChange('celular')}
                       onBlur={handleBlur('celular')}
+                      keyboardType="phone-pad"
                     />
                   </View>
                   {errors.celular && touched.celular ? <Text style={styles.errorText}>{errors.celular}</Text> : null}
@@ -171,21 +174,6 @@ const CreateClientModal = ({ isVisible, onClose, onCreate }) => {
                   </View>
                   {errors.address && touched.address ? <Text style={styles.errorText}>{errors.address}</Text> : null}
                 </View>
-
-                <View style={styles.inputContainer}>
-                  <Text style={styles.label}>Vertical</Text>
-                  <View style={styles.inputWrapper}>
-                    <FontAwesome5 name="ellipsis-h" style={styles.icon} />
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Vertical"
-                      value={values.vertical}
-                      onChangeText={handleChange('vertical')}
-                      onBlur={handleBlur('vertical')}
-                    />
-                  </View>
-                  {errors.vertical && touched.vertical ? <Text style={styles.errorText}>{errors.vertical}</Text> : null}
-                </View>
                 <View style={styles.inputContainer}>
                   <Text style={styles.label}>Descripción</Text>
                   <View style={styles.inputWrapper}>
@@ -201,6 +189,18 @@ const CreateClientModal = ({ isVisible, onClose, onCreate }) => {
                   {errors.descripcion && touched.descripcion ? <Text style={styles.errorText}>{errors.descripcion}</Text> : null}
                 </View>
 
+                <View style={styles.inputContainer}>
+                {/* <FontAwesome5 name="ellipsis-h" style={styles.icon} /> */}
+                    <RNPickerSelect
+                    selectedValue={values.vertical}
+                    onValueChange={handleChange('vertical')}
+                    style={{ ...pickerSelectStyles, inputIOS: { ...pickerSelectStyles.inputIOS, width: '100%' } }}
+                    placeholder={{ label: 'Selecciona una vertical', value: ""  }}
+                    items={TIPOS_VERTICALES}
+                    onBlur={handleBlur('vertical')}
+                  />
+                  {errors.vertical && touched.vertical ? <Text style={styles.errorText}>{errors.vertical}</Text> : null}
+                </View>
                 <View style={styles.inputContainer}>
                   <RNPickerSelect
                     selectedValue={values.departmentId}
@@ -234,7 +234,7 @@ const CreateClientModal = ({ isVisible, onClose, onCreate }) => {
                     selectedValue={values.type}
                     onValueChange={handleChange('type')}
                     style={{ ...pickerSelectStyles, inputIOS: { ...pickerSelectStyles.inputIOS, width: '100%' } }}
-                    placeholder={{ label: 'Selecciona un tipo', value: null }}
+                    placeholder={{ label: 'Selecciona un tipo', value: ""  }}
                     items={[
                       { label: 'Integrador', value: 'INTEGRADOR' },
                       { label: 'Distribuidor', value: 'DISTRIBUIDOR' },

@@ -34,7 +34,6 @@ export async function QueryVisitDashboardData() {
             'Authorization': `Bearer ${token}`
         }
     });
-    console.log(response.data.errors)
     if (response.data.errors) {
       Toast.show({
         type: 'error',
@@ -257,7 +256,7 @@ export const QueryVisitByUser = async (data) => {
         'Authorization': `Bearer ${token}`
     }
     });
-
+    console.log(response.data.errors)
     if (response.data.errors) {
       handleGraphQLErrors(response.data.errors)
       return null
@@ -297,6 +296,9 @@ export const CreateVisit = async (createInput) => {
         'Authorization': `Bearer ${token}`
     }
     });
+    console.log(token)
+    console.log(id)
+    console.log(response.data)
     if (response.data.errors) {
       handleGraphQLErrors(response.data.errors)
       return null

@@ -151,7 +151,6 @@ export const fetchDepartments = async () => {
 
 export const fetchCities = async (departmentId) => {
   try {
-    console.log(departmentId)
     const token = await AsyncStorage.getItem("userToken");
     const response = await axios.post(URL_API_GRAPHQL, {
       query: `
@@ -235,15 +234,40 @@ export const fetchClientDetails = async (clientId) => {
         updatedAt
       }
       client {
-                id
-            name
-            numberDocument
-            email
-            telefono
-            celular
-            createdAt
-            updatedAt
-            deletedAt  
+        id
+        createdAt
+        updatedAt
+        deletedAt
+        name
+        numberDocument
+        email
+        telefono
+        address
+        type
+        vertical
+        descripcion
+        celular
+        department {
+          id
+          createdAt
+          updatedAt
+          deletedAt
+          code
+          name
+        }
+        city {
+          id
+          createdAt
+          updatedAt
+          deletedAt
+          code
+          name
+        }
+        user {
+          name
+          id
+          email
+        }
       }
     }
   }
@@ -263,8 +287,89 @@ export const fetchClientDetails = async (clientId) => {
       contact: response.data.data?.clientAndContact?.contact || [],
     };
   }catch(err){
-    console.log(err)
     handleGraphQLErrors(err)
     return null
   }
 };
+
+export const UpdateClientMutation = async (updateInput,id) => {
+  try {
+    const token = await AsyncStorage.getItem("userToken");
+    const response = await axios.post(URL_API_GRAPHQL, {
+      query: `
+      mutation UpdateClient($updateInput: UpdateClientInput!) {
+        updateClient(updateInput: $updateInput) {
+          id
+        }
+      }
+      `,
+      variables: { updateInput: {id,...updateInput} },
+    },  {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (response.data.errors) {
+      handleGraphQLErrors(response.data.errors)
+      return null
+    }
+    return true;
+  }catch(err){
+    handleGraphQLErrors(err)
+    return null
+  }
+}
+export const UpdateClienteContactMutation = async (updateInput) => {
+  try {
+    const token = await AsyncStorage.getItem("userToken");
+    const response = await axios.post(URL_API_GRAPHQL, {
+      query: `
+      mutation UpdateClientContact($updateInput: UpdateClientContactInput!) {
+        updateClientContact(updateInput: $updateInput) {
+          id
+        }
+      }
+      `,
+      variables: { updateInput },
+    },  {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (response.data.errors) {
+      handleGraphQLErrors(response.data.errors)
+      return null
+    }
+    return true;
+  }catch(err){
+    handleGraphQLErrors(err)
+    return null
+  }
+}
+export const DeleteClientContact = async (id) => {
+  try {
+    const token = await AsyncStorage.getItem("userToken");
+    const response = await axios.post(URL_API_GRAPHQL, {
+      query: `
+      mutation RemoveClientContact($removeClientContactId: ID!) {
+        removeClientContact(id: $removeClientContactId) {
+          id
+        }
+      }
+      `,
+      variables: { removeClientContactId: id },
+    },  {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (response.data.errors) {
+      handleGraphQLErrors(response.data.errors)
+      return null
+    }
+    return true;
+  }catch(err){
+    handleGraphQLErrors(err)
+    return null
+  }
+}
